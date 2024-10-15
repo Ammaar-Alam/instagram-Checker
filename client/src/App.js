@@ -20,39 +20,39 @@ import {
   Toolbar,
   IconButton,
 } from "@mui/material";
-import InstagramIcon from '@mui/icons-material/Instagram';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import LanguageIcon from '@mui/icons-material/Language';
+import InstagramIcon from "@mui/icons-material/Instagram";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import LanguageIcon from "@mui/icons-material/Language";
 
 // Create a dark theme
 const darkTheme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: "dark",
     primary: {
-      main: '#ffffff',
+      main: "#ffffff",
     },
     background: {
-      default: '#000000',
-      paper: '#1c1c1c',
+      default: "#000000",
+      paper: "#1c1c1c",
     },
     text: {
-      primary: '#ffffff',
-      secondary: '#b0b0b0',
+      primary: "#ffffff",
+      secondary: "#b0b0b0",
     },
-    divider: '#333',
+    divider: "#333",
   },
   typography: {
-    fontFamily: 'Montserrat, Roboto, sans-serif',
+    fontFamily: "Montserrat, Roboto, sans-serif",
     h6: {
       fontWeight: 600,
-      letterSpacing: '0.05em',
+      letterSpacing: "0.05em",
     },
     body1: {
-      fontSize: '1rem',
+      fontSize: "1rem",
     },
     button: {
-      textTransform: 'none',
+      textTransform: "none",
     },
   },
 });
@@ -82,8 +82,8 @@ function App() {
   useEffect(() => {
     if (results) {
       const usernames = [
-        ...results.notFollowingBack.map(user => user.username),
-        ...results.notFollowedByYou.map(user => user.username),
+        ...results.notFollowingBack.map((user) => user.username),
+        ...results.notFollowedByYou.map((user) => user.username),
       ];
 
       const fetchProfilePictures = async () => {
@@ -97,7 +97,10 @@ function App() {
                 const data = await response.json();
                 newProfilePictures[username] = data.profilePicUrl;
               } catch (error) {
-                console.error(`Error fetching profile picture for ${username}:`, error);
+                console.error(
+                  `Error fetching profile picture for ${username}:`,
+                  error
+                );
               }
             }
           })
@@ -116,24 +119,24 @@ function App() {
     setError(null);
 
     const formData = new FormData();
-    formData.append('followers', followersFile);
-    formData.append('following', followingFile);
+    formData.append("followers", followersFile);
+    formData.append("following", followingFile);
 
     try {
-      const response = await fetch('/api/check', {
-        method: 'POST',
+      const response = await fetch("/api/check", {
+        method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'An error occurred.');
+        throw new Error(errorData.error || "An error occurred.");
       }
 
       const result = await response.json();
       setResults(result);
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -176,7 +179,11 @@ function App() {
         </Toolbar>
       </AppBar>
       <Container maxWidth="md">
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4, textAlign: 'center' }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ mt: 4, textAlign: "center" }}
+        >
           <Box mb={2}>
             <Typography variant="subtitle1">Following JSON:</Typography>
             <input
@@ -184,7 +191,7 @@ function App() {
               accept=".json"
               onChange={(e) => setFollowingFile(e.target.files[0])}
               required
-              style={{ color: '#f8f7f9' }}
+              style={{ color: "#f8f7f9" }}
             />
           </Box>
           <Box mb={2}>
@@ -194,7 +201,7 @@ function App() {
               accept=".json"
               onChange={(e) => setFollowersFile(e.target.files[0])}
               required
-              style={{ color: '#f8f7f9' }}
+              style={{ color: "#f8f7f9" }}
             />
           </Box>
           <StyledButton type="submit" variant="contained" color="primary">
@@ -206,29 +213,43 @@ function App() {
             {error}
           </Typography>
         )}
-        {loading && <CircularProgress />}
+        {loading && (
+          <Box textAlign="center" mt={4}>
+            <CircularProgress />
+          </Box>
+        )}
         {results && (
           <Box mt={4}>
             <Grid container spacing={4}>
               <Grid item xs={12} md={6}>
                 <Typography variant="h6">Not Following You Back</Typography>
-                <StyledPaper style={{ maxHeight: 400, overflow: 'auto' }}>
+                <StyledPaper style={{ maxHeight: 400, overflow: "auto" }}>
                   <List>
                     {results.notFollowingBack.map((user, index) => (
                       <ListItem
                         button
                         key={index}
-                        onClick={() => window.open(`https://www.instagram.com/${user.username}/`, '_blank')}
+                        onClick={() =>
+                          window.open(
+                            `https://www.instagram.com/${user.username}/`,
+                            "_blank"
+                          )
+                        }
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={`https://unavatar.io/instagram/${user.username}`}
+                            src={
+                              profilePictures[user.username] ||
+                              `https://unavatar.io/instagram/${user.username}`
+                            }
                             alt={user.username}
                           />
                         </ListItemAvatar>
                         <ListItemText
                           primary={user.username}
-                          secondary={`Followed on: ${new Date(user.timestamp * 1000).toLocaleDateString()}`}
+                          secondary={`Followed on: ${new Date(
+                            user.timestamp * 1000
+                          ).toLocaleDateString()}`}
                         />
                       </ListItem>
                     ))}
@@ -237,23 +258,33 @@ function App() {
               </Grid>
               <Grid item xs={12} md={6}>
                 <Typography variant="h6">You're Not Following Back</Typography>
-                <StyledPaper style={{ maxHeight: 400, overflow: 'auto' }}>
+                <StyledPaper style={{ maxHeight: 400, overflow: "auto" }}>
                   <List>
                     {results.notFollowedByYou.map((user, index) => (
                       <ListItem
                         button
                         key={index}
-                        onClick={() => window.open(`https://www.instagram.com/${user.username}/`, '_blank')}
+                        onClick={() =>
+                          window.open(
+                            `https://www.instagram.com/${user.username}/`,
+                            "_blank"
+                          )
+                        }
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={`https://unavatar.io/instagram/${user.username}`}
+                            src={
+                              profilePictures[user.username] ||
+                              `https://unavatar.io/instagram/${user.username}`
+                            }
                             alt={user.username}
                           />
                         </ListItemAvatar>
                         <ListItemText
                           primary={user.username}
-                          secondary={`Followed you on: ${new Date(user.timestamp * 1000).toLocaleDateString()}`}
+                          secondary={`Followed you on: ${new Date(
+                            user.timestamp * 1000
+                          ).toLocaleDateString()}`}
                         />
                       </ListItem>
                     ))}
@@ -264,7 +295,9 @@ function App() {
           </Box>
         )}
         <Box mt={4} textAlign="center">
-          <Typography variant="body2">© {new Date().getFullYear()} Ammaar Alam. All rights reserved.</Typography>
+          <Typography variant="body2">
+            © {new Date().getFullYear()} Ammaar Alam. All rights reserved.
+          </Typography>
           <Box mt={2}>
             <IconButton
               color="inherit"

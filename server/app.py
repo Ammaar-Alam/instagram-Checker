@@ -46,22 +46,22 @@ def check_followers():
     try:
         if 'following' not in request.files or 'followers' not in request.files:
             raise ValueError("Both following and followers files are required.")
-        
+
         following_file = request.files['following']
         followers_file = request.files['followers']
-        
+
         following_data = json.load(following_file)
         followers_data = json.load(followers_file)
-        
+
         result = process_json(following_data, followers_data)
-        
+
         return jsonify(result)
     except Exception as error:
         print(f"Error processing files: {error}")
         return jsonify({'error': 'An error occurred while processing the files.'}), 500
 
 def process_json(following_data, followers_data):
-    # Update to handle both dict and list inputs
+    # update to handle both dict / list inputs
     if isinstance(following_data, dict) and 'relationships_following' in following_data:
         following_array = following_data['relationships_following']
     else:

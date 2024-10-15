@@ -16,15 +16,38 @@ if (process.env.NODE_ENV === "production") {
 }
 
 function processJSON(followingData, followersData) {
-  const following = new Set(
-    followingData.relationships_following.map((user) => user.string_list_data[0].value),
-  );
-  const followers = new Set(
-    followersData.relationships_followers.map((user) => user.string_list_data[0].value),
+  // Modify to include both username and timestamp in the results
+  const following = followingData.relationships_following;
+  const followers = followersData.relationships_followers;
+
+  // Create maps from username to timestamp for following and followers
+  const followingMap = new Map(
+    following.map(user => [
+      user.string_list_data[0].value,
+      user.string_list_data[0].timestamp,
+    ])
   );
 
-  const notFollowingBack = [...following].filter((user) => !followers.has(user));
-  const notFollowedByYou = [...followers].filter((user) => !following.has(user));
+  const followersMap = new Map(
+    followers.map(user => [
+      user.string_list_data[0].value,
+      user.string_list_data[0].timestamp,
+    ])
+  );
+
+  const notFollowingBack = [...followingMap.keys()]
+    .filter(user => !followersMap.has(user))
+    .map(user => ({
+      username: user,
+      timestamp: followingMap.get(user),
+    }));
+
+  const notFollowedByYou = [...followersMap.keys()]
+    .filter(user => !followingMap.has(user))
+    .map(user => ({
+      username: user,
+      timestamp: followersMap.get(user),
+    }));
 
   return { notFollowingBack, notFollowedByYou };
 }
@@ -36,19 +59,24 @@ app.post(
     { name: "followers", maxCount: 1 },
   ]),
   (req, res) => {
-    const followingFile = req.files["following"][0];
-    const followersFile = req.files["followers"][0];
+    try {
+      const followingFile = req.files["following"][0];
+      const followersFile = req.files["followers"][0];
 
-    const followingData = JSON.parse(fs.readFileSync(followingFile.path, "utf8"));
-    const followersData = JSON.parse(fs.readFileSync(followersFile.path, "utf8"));
+      const followingData = JSON.parse(fs.readFileSync(followingFile.path, "utf8"));
+      const followersData = JSON.parse(fs.readFileSync(followersFile.path, "utf8"));
 
-    const result = processJSON(followingData, followersData);
+      const result = processJSON(followingData, followersData);
 
-    // clean uploaded files
-    fs.unlinkSync(followingFile.path);
-    fs.unlinkSync(followersFile.path);
+      // clean uploaded files
+      fs.unlinkSync(followingFile.path);
+      fs.unlinkSync(followersFile.path);
 
-    res.json(result);
+      res.json(result);
+    } catch (error) {
+      console.error("Error processing files:", error);
+      res.status(500).json({ error: "An error occurred while processing the files." });
+    }
   },
 );
 

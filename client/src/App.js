@@ -8,15 +8,21 @@ import {
   ListItemText,
   Box,
   CircularProgress,
+  Grid,
+  Paper,
+  Avatar,
+  ListItemAvatar,
 } from "@mui/material";
 
 function App() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
+    setError(null); // Reset previous errors
 
     const formData = new FormData();
     formData.append("following", event.target.following.files[0]);
@@ -27,10 +33,16 @@ function App() {
         method: "POST",
         body: formData,
       });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
       const data = await response.json();
       setResults(data);
     } catch (error) {
       console.error("Error:", error);
+      setError("Failed to check followers. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -54,34 +66,69 @@ function App() {
           Check Followers
         </Button>
       </form>
+      {error && (
+        <Typography color="error" variant="body1">
+          {error}
+        </Typography>
+      )}
       {loading && <CircularProgress />}
       {results && (
         <Box mt={4}>
           <Typography variant="h5" gutterBottom>
             Results:
           </Typography>
-          <Box display="flex" justifyContent="space-between">
-            <Box flex={1} mr={2}>
-              <Typography variant="h6">Not following you back:</Typography>
-              <List>
-                {results.notFollowingBack.map((user, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={user} />
-                  </ListItem>
-                ))}
-              </List>
-            </Box>
-            <Box flex={1} ml={2}>
-              <Typography variant="h6">You're not following:</Typography>
-              <List>
-                {results.notFollowedByYou.map((user, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={user} />
-                  </ListItem>
-                ))}
-              </List>
-            </Box>
-          </Box>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6">Not Following You Back</Typography>
+              <Paper style={{ maxHeight: 400, overflow: 'auto' }}>
+                <List>
+                  {results.notFollowingBack.map((user, index) => (
+                    <ListItem
+                      button
+                      key={index}
+                      onClick={() =>
+                        window.open(`https://www.instagram.com/${user.username}/`, '_blank')
+                      }
+                    >
+                      <ListItemAvatar>
+                        {/* Use a placeholder image as fetching actual profile pictures may not be feasible */}
+                        <Avatar src={`https://via.placeholder.com/40`} alt={user.username} />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={user.username}
+                        secondary={`Timestamp: ${new Date(user.timestamp * 1000).toLocaleString()}`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6">You're Not Following Back</Typography>
+              <Paper style={{ maxHeight: 400, overflow: 'auto' }}>
+                <List>
+                  {results.notFollowedByYou.map((user, index) => (
+                    <ListItem
+                      button
+                      key={index}
+                      onClick={() =>
+                        window.open(`https://www.instagram.com/${user.username}/`, '_blank')
+                      }
+                    >
+                      <ListItemAvatar>
+                        {/* Use a placeholder image as fetching actual profile pictures may not be feasible */}
+                        <Avatar src={`https://via.placeholder.com/40`} alt={user.username} />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={user.username}
+                        secondary={`Timestamp: ${new Date(user.timestamp * 1000).toLocaleString()}`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            </Grid>
+          </Grid>
         </Box>
       )}
     </Container>

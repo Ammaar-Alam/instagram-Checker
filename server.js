@@ -9,7 +9,11 @@ const upload = multer({ dest: "uploads/" });
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "build")));
+
+// serve static files from React app only in prod
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "client/build")));
+}
 
 function processJSON(followingData, followersData) {
   const following = new Set(
@@ -40,7 +44,7 @@ app.post(
 
     const result = processJSON(followingData, followersData);
 
-    // Clean up uploaded files
+    // clean uploaded files
     fs.unlinkSync(followingFile.path);
     fs.unlinkSync(followersFile.path);
 
@@ -48,9 +52,12 @@ app.post(
   },
 );
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
-});
+// serve react app in prod
+if (process.env.NODE_ENV === "production") {
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client/build", "index.html"));
+  });
+}
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

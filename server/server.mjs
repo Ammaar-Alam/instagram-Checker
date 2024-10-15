@@ -8,15 +8,14 @@ import fetch from "node-fetch";
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
-// Enable CORS
 app.use(cors());
 
-// Serve static files from React app in production
+// serve static files from React app in prod
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
 }
 
-// Function to process JSON files
+// process JSON files
 function processJSON(followingData, followersData) {
   const followingArray = followingData.relationships_following || followingData;
   const followersArray = followersData.relationships_followers || followersData;
@@ -62,7 +61,8 @@ function processJSON(followingData, followersData) {
   return { notFollowingBack, notFollowedByYou };
 }
 
-// Endpoint to get profile pictures
+// endpoint to get pfp's
+// this doesn't really work, too lazy to fix
 app.get("/api/profile-pic/:username", async (req, res) => {
   try {
     const username = req.params.username;
@@ -96,7 +96,7 @@ app.get("/api/profile-pic/:username", async (req, res) => {
   }
 });
 
-// Endpoint to process followers and following files
+// endpoint to process followers and following files
 app.post(
   "/api/check",
   upload.fields([
@@ -125,7 +125,7 @@ app.post(
 
       const result = processJSON(followingData, followersData);
 
-      // Clean uploaded files
+      // clean uploaded files
       fs.unlinkSync(followingFile.path);
       fs.unlinkSync(followersFile.path);
 
@@ -139,7 +139,7 @@ app.post(
   }
 );
 
-// Serve React app in production
+// serve React app in prod
 if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     res.sendFile(

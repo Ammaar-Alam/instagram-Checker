@@ -17,11 +17,10 @@ if (process.env.NODE_ENV === "production") {
 }
 
 function processJSON(followingData, followersData) {
-  // Adjusted to handle both possible structures of the JSON data
   const followingArray = followingData.relationships_following || followingData;
   const followersArray = followersData.relationships_followers || followersData;
 
-  // Create maps from username to timestamp for following and followers
+  // create maps from username to timestamp for following and followers
   const followingMap = new Map();
   followingArray.forEach((user) => {
     if (
@@ -89,7 +88,7 @@ app.post(
   ]),
   (req, res) => {
     try {
-      // Validate that files are uploaded
+      // validate files are uploaded
       if (
         !req.files ||
         !req.files["following"] ||
@@ -110,7 +109,7 @@ app.post(
 
       const result = processJSON(followingData, followersData);
 
-      // Clean uploaded files
+      // clean uploaded files
       fs.unlinkSync(followingFile.path);
       fs.unlinkSync(followersFile.path);
 

@@ -4,6 +4,7 @@
 /*--------------------------------------------------------------------*/
 
 #include <stdio.h>
+#include <string.h>
 #include "json_parser.h"
 #include "hashtable.h"
 
@@ -37,22 +38,35 @@ void extractUsernames (const char* jsonData, SymTable_T table) {
     while (pos != NULL) {
         char username[100]; /* buffer to hold username */
         sscanf(pos, "\"value\": \"%[^\"]\"", username); /* extract username */
-        SymTable_put(table, username); /* insert into hashtable */
+        SymTable_put(table, username, NULL); /* insert into hashtable */
         pos = strstr(pos + 1, "\"value\":"); /* find next occurance  */
     }
 }
 
-void compareTables (SymTable_T following, SymTable_T followers) {
-    /* find ppl who you follow but dont follow you back */
-    for (size_t i = 0; i < SymTable_getLength(following); i++) {
-        const char *username = SymTable_get(following, i); /* gets user from following list */
-        if (!SymTable_contains(followers, username)) printf("%s does not follow you back.\n", username);
-    }
+static void printNonFollowers(const char *username, void *pvValue, void *pvExtra) {
+    struct {
+        SymTable_T otherTable;
+        const char *message;
+    } *data = pvExtra;
 
-    /* find ppl who follow you but you dont follow back */
-    for (size_t i = 0; i < SymTable_getLength(followers); i++) {
-        const char *username = SymTable_get(followers, i); /* gets user from following list */
-        if (!SymTable_contains(following, username)) printf("%s follows you but you don't follow them back.\n", username);
+    if (!SymTable_contains(data->otherTable, username)) {
+        printf("%s %s\n", username, data->message);
     }
+}
 
+void compareTables(SymTable_T following, SymTable_T followers) {
+    struct {
+        SymTable_T otherTable;
+        const char *message;
+    } data;
+
+    printf("People you follow but don't follow you back:\n");
+    data.otherTable = followers;
+    data.message = "does not follow you back.";
+    SymTable_map(following, printNonFollowers, &data);
+
+    printf("\nPeople who follow you but you don't follow back:\n");
+    data.otherTable = following;
+    data.message = "is not followed by you.";
+    SymTable_map(followers, printNonFollowers, &data);
 }

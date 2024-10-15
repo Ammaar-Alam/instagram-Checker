@@ -1,31 +1,35 @@
-# The compiler to use
+# Compiler to use
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -Werror
+CFLAGS = -Wall -Werror -g
 
-# The name of the final executable
-TARGET = instagram-following
+# The target executable name
+TARGET = instagram-Checker
 
 # Object files
-OBJS = main.o hashtable.o json_parser.o
+OBJS = main.o json_parser.o hashtable.o
 
-# The rule to build the final executable
+# Default target
+all: $(TARGET)
+
+# Rule to link the program
 $(TARGET): $(OBJS)
-    $(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-# Rule to build main.o from main.c
+# Rules for compiling source files to object files
 main.o: main.c hashtable.h json_parser.h
-    $(CC) $(CFLAGS) -c main.c
+	$(CC) $(CFLAGS) -c main.c
 
-# Rule to build hashtable.o from hashtable.c
+json_parser.o: json_parser.c json_parser.h hashtable.h
+	$(CC) $(CFLAGS) -c json_parser.c
+
 hashtable.o: hashtable.c hashtable.h
-    $(CC) $(CFLAGS) -c hashtable.c
+	$(CC) $(CFLAGS) -c hashtable.c
 
-# Rule to build json_parser.o from json_parser.c
-json_parser.o: json_parser.c json_parser.h
-    $(CC) $(CFLAGS) -c json_parser.c
-
-# Clean up (delete object files and the executable)
+# Rule to clean up the build
 clean:
-    rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
+
+# Phony targets
+.PHONY: all clean

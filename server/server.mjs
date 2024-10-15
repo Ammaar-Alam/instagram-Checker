@@ -8,6 +8,12 @@ import fetch from "node-fetch";
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 app.use(cors());
 
 // serve static files from React app in prod
@@ -66,9 +72,7 @@ function processJSON(followingData, followersData) {
 app.get("/api/profile-pic/:username", async (req, res) => {
   try {
     const username = req.params.username;
-    const response = await fetch(
-      `https://www.instagram.com/${username}/?__a=1&__d=dis`
-    );
+    const response = await fetch(`https://www.instagram.com/${username}/?__a=1&__d=dis`);
 
     if (!response.ok) {
       throw new Error("Network response was not ok");
@@ -83,15 +87,11 @@ app.get("/api/profile-pic/:username", async (req, res) => {
     }
 
     const jsonData = JSON.parse(match[1]);
-    const profilePicUrl =
-      jsonData.entry_data.ProfilePage[0].graphql.user.profile_pic_url_hd;
+    const profilePicUrl = jsonData.entry_data.ProfilePage[0].graphql.user.profile_pic_url_hd;
 
     res.json({ profilePicUrl });
   } catch (error) {
-    console.error(
-      `Error fetching profile picture for ${req.params.username}:`,
-      error
-    );
+    console.error(`Error fetching profile picture for ${req.params.username}:`, error);
     res.status(500).json({ error: "Failed to fetch profile picture" });
   }
 });
@@ -105,23 +105,15 @@ app.post(
   ]),
   (req, res) => {
     try {
-      if (
-        !req.files ||
-        !req.files["following"] ||
-        !req.files["followers"]
-      ) {
+      if (!req.files || !req.files["following"] || !req.files["followers"]) {
         throw new Error("Both following and followers files are required.");
       }
 
       const followingFile = req.files["following"][0];
       const followersFile = req.files["followers"][0];
 
-      const followingData = JSON.parse(
-        fs.readFileSync(followingFile.path, "utf8")
-      );
-      const followersData = JSON.parse(
-        fs.readFileSync(followersFile.path, "utf8")
-      );
+      const followingData = JSON.parse(fs.readFileSync(followingFile.path, "utf8"));
+      const followersData = JSON.parse(fs.readFileSync(followersFile.path, "utf8"));
 
       const result = processJSON(followingData, followersData);
 
@@ -132,19 +124,15 @@ app.post(
       res.json(result);
     } catch (error) {
       console.error("Error processing files:", error.message);
-      res
-        .status(500)
-        .json({ error: "An error occurred while processing the files." });
+      res.status(500).json({ error: "An error occurred while processing the files." });
     }
-  }
+  },
 );
 
 // serve React app in prod
 if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
-    res.sendFile(
-      path.join(__dirname, "../client/build", "index.html")
-    );
+    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
   });
 }
 

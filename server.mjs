@@ -1,9 +1,9 @@
-const express = require("express");
-const multer = require("multer");
-const cors = require("cors");
-const fs = require("fs");
-const path = require("path");
-const fetch = require('node-fetch');
+import express from "express";
+import multer from "multer";
+import cors from "cors";
+import fs from "fs";
+import path from "path";
+import fetch from 'node-fetch';
 
 const app = express();
 const upload = multer({ dest: "uploads/" });

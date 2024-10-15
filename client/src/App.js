@@ -21,7 +21,9 @@ import {
   IconButton,
 } from "@mui/material";
 import InstagramIcon from '@mui/icons-material/Instagram';
-import { GitHub as GitHubIcon, LinkedIn as LinkedInIcon, Language as LanguageIcon } from '@mui/icons-material';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import LanguageIcon from '@mui/icons-material/Language';
 
 // Create a dark theme
 const darkTheme = createTheme({
@@ -41,7 +43,7 @@ const darkTheme = createTheme({
     divider: '#333',
   },
   typography: {
-    fontFamily: 'Roboto, sans-serif',
+    fontFamily: 'Montserrat, Roboto, sans-serif',
     h6: {
       fontWeight: 600,
       letterSpacing: '0.05em',
@@ -81,6 +83,7 @@ function App() {
         ...results.notFollowingBack.map(user => user.username),
         ...results.notFollowedByYou.map(user => user.username),
       ];
+  
       usernames.forEach(username => {
         if (!profilePictures[username]) {
           fetch(`/api/profile-pic/${username}`)

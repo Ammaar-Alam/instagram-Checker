@@ -4,6 +4,10 @@
   "description": "",
   "main": "server/server.mjs",
   "type": "module",
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
   "scripts": {
     "start": "node server/server.mjs",
     "server": "nodemon server/server.mjs",

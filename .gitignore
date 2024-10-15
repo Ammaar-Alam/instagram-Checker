@@ -5,3 +5,8 @@ out
 .DS_Store
 .gitattributes
 *.iml
+*.pyc
+__pycache__/
+instance/
+*.log
+server/uploads/

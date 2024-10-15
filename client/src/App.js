@@ -76,6 +76,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [profilePictures, setProfilePictures] = useState({});
+  const [followersFile, setFollowersFile] = useState(null);
+  const [followingFile, setFollowingFile] = useState(null);
 
   useEffect(() => {
     if (results) {
@@ -83,46 +85,56 @@ function App() {
         ...results.notFollowingBack.map(user => user.username),
         ...results.notFollowedByYou.map(user => user.username),
       ];
-  
-      usernames.forEach(username => {
-        if (!profilePictures[username]) {
-          fetch(`/api/profile-pic/${username}`)
-            .then(response => response.json())
-            .then(data => {
-              setProfilePictures(prev => ({ ...prev, [username]: data.profilePicUrl }));
-            })
-            .catch(error => {
-              console.error(`Error fetching profile picture for ${username}:`, error);
-            });
-        }
-      });
+
+      const fetchProfilePictures = async () => {
+        const newProfilePictures = {};
+
+        await Promise.all(
+          usernames.map(async (username) => {
+            if (!profilePictures[username]) {
+              try {
+                const response = await fetch(`/api/profile-pic/${username}`);
+                const data = await response.json();
+                newProfilePictures[username] = data.profilePicUrl;
+              } catch (error) {
+                console.error(`Error fetching profile picture for ${username}:`, error);
+              }
+            }
+          })
+        );
+
+        setProfilePictures((prev) => ({ ...prev, ...newProfilePictures }));
+      };
+
+      fetchProfilePictures();
     }
   }, [results]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    setError(null); // Reset previous errors
+    setError(null);
 
     const formData = new FormData();
-    formData.append("following", event.target.following.files[0]);
-    formData.append("followers", event.target.followers.files[0]);
+    formData.append('followers', followersFile);
+    formData.append('following', followingFile);
 
     try {
-      const response = await fetch("/api/check", {
-        method: "POST",
+      const response = await fetch('/api/check', {
+        method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'An error occurred.');
       }
 
-      const data = await response.json();
-      setResults(data);
+      const result = await response.json();
+      setResults(result);
     } catch (error) {
-      console.error("Error:", error);
-      setError("Failed to check followers. Please try again.");
+      console.error('Error:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -167,11 +179,23 @@ function App() {
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4, textAlign: 'center' }}>
           <Box mb={2}>
             <Typography variant="subtitle1">Following JSON:</Typography>
-            <input type="file" name="following" accept=".json" required style={{ color: '#f8f7f9' }} />
+            <input
+              type="file"
+              accept=".json"
+              onChange={(e) => setFollowingFile(e.target.files[0])}
+              required
+              style={{ color: '#f8f7f9' }}
+            />
           </Box>
           <Box mb={2}>
             <Typography variant="subtitle1">Followers JSON:</Typography>
-            <input type="file" name="followers" accept=".json" required style={{ color: '#f8f7f9' }} />
+            <input
+              type="file"
+              accept=".json"
+              onChange={(e) => setFollowersFile(e.target.files[0])}
+              required
+              style={{ color: '#f8f7f9' }}
+            />
           </Box>
           <StyledButton type="submit" variant="contained" color="primary">
             Check Followers
@@ -198,7 +222,7 @@ function App() {
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={profilePictures[user.username]}
+                            src={`https://unavatar.io/instagram/${user.username}`}
                             alt={user.username}
                           />
                         </ListItemAvatar>
@@ -223,7 +247,7 @@ function App() {
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={profilePictures[user.username]}
+                            src={`https://unavatar.io/instagram/${user.username}`}
                             alt={user.username}
                           />
                         </ListItemAvatar>

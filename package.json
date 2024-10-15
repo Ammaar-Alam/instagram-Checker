@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
-    "server": "nodemon server.js",
+    "server": "nodemon server.mjs",
     "client": "cd client && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "cd client && npm run build",
@@ -23,7 +24,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "multer": "^1.4.5-lts.1",
-    "node-fetch": "^2.6.11"
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "concurrently": "^6.5.1",

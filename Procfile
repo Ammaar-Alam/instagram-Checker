@@ -1,1 +1,1 @@
-web: node server/server.mjs
+web: gunicorn server.app:app

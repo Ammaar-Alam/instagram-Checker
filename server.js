@@ -3,6 +3,7 @@ const multer = require("multer");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const fetch = require('node-fetch');
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
@@ -61,6 +62,24 @@ function processJSON(followingData, followersData) {
 
   return { notFollowingBack, notFollowedByYou };
 }
+
+app.get('/api/profile-pic/:username', async (req, res) => {
+  try {
+    const username = req.params.username;
+    const response = await fetch(`https://www.instagram.com/${username}/?__a=1&__d=dis`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const text = await response.text();
+    const jsonString = text.match(/<script type="text\/javascript">window\._sharedData = (.*);<\/script>/)[1];
+    const json = JSON.parse(jsonString);
+    const profilePicUrl = json.entry_data.ProfilePage[0].graphql.user.profile_pic_url_hd;
+    res.json({ profilePicUrl });
+  } catch (error) {
+    console.error(`Error fetching profile picture for ${req.params.username}:`, error);
+    res.status(500).json({ error: 'Failed to fetch profile picture' });
+  }
+});
 
 app.post(
   "/api/check",

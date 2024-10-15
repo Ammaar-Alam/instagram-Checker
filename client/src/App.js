@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -16,25 +16,42 @@ import {
   createTheme,
   CssBaseline,
   styled,
+  AppBar,
+  Toolbar,
+  IconButton,
 } from "@mui/material";
+import InstagramIcon from '@mui/icons-material/Instagram';
+import { GitHub as GitHubIcon, LinkedIn as LinkedInIcon, Language as LanguageIcon } from '@mui/icons-material';
 
 // Create a dark theme
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#92dce5', // Non Photo Blue
+      main: '#ffffff',
     },
     background: {
-      default: '#2b2d42', // Space Cadet
-      paper: '#3c3f58', // Slightly lighter for paper components
+      default: '#000000',
+      paper: '#1c1c1c',
     },
     text: {
-      primary: '#f8f7f9', // Seasalt
+      primary: '#ffffff',
+      secondary: '#b0b0b0',
     },
+    divider: '#333',
   },
   typography: {
     fontFamily: 'Roboto, sans-serif',
+    h6: {
+      fontWeight: 600,
+      letterSpacing: '0.05em',
+    },
+    body1: {
+      fontSize: '1rem',
+    },
+    button: {
+      textTransform: 'none',
+    },
   },
 });
 
@@ -43,6 +60,9 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   padding: theme.spacing(2),
   color: theme.palette.text.primary,
+  border: `1px solid ${theme.palette.divider}`,
+  boxShadow: theme.shadows[3],
+  borderRadius: theme.shape.borderRadius,
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -53,6 +73,28 @@ function App() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [profilePictures, setProfilePictures] = useState({});
+
+  useEffect(() => {
+    if (results) {
+      const usernames = [
+        ...results.notFollowingBack.map(user => user.username),
+        ...results.notFollowedByYou.map(user => user.username),
+      ];
+      usernames.forEach(username => {
+        if (!profilePictures[username]) {
+          fetch(`/api/profile-pic/${username}`)
+            .then(response => response.json())
+            .then(data => {
+              setProfilePictures(prev => ({ ...prev, [username]: data.profilePicUrl }));
+            })
+            .catch(error => {
+              console.error(`Error fetching profile picture for ${username}:`, error);
+            });
+        }
+      });
+    }
+  }, [results]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -86,11 +128,40 @@ function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
+      <AppBar position="static" color="primary">
+        <Toolbar>
+          <IconButton edge="start" color="inherit" aria-label="menu">
+            <InstagramIcon fontSize="large" />
+          </IconButton>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Instagram Follower Checker
+          </Typography>
+          {/* Social links in AppBar */}
+          <IconButton
+            color="inherit"
+            href="https://github.com/Ammaar-Alam"
+            target="_blank"
+          >
+            <GitHubIcon />
+          </IconButton>
+          <IconButton
+            color="inherit"
+            href="https://www.linkedin.com/in/Ammaar-Alam"
+            target="_blank"
+          >
+            <LinkedInIcon />
+          </IconButton>
+          <IconButton
+            color="inherit"
+            href="https://ammaar.xyz"
+            target="_blank"
+          >
+            <LanguageIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
       <Container maxWidth="md">
-        <Typography variant="h3" component="h1" gutterBottom align="center">
-          Instagram Follower Checker
-        </Typography>
-        <form onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4, textAlign: 'center' }}>
           <Box mb={2}>
             <Typography variant="subtitle1">Following JSON:</Typography>
             <input type="file" name="following" accept=".json" required style={{ color: '#f8f7f9' }} />
@@ -102,7 +173,7 @@ function App() {
           <StyledButton type="submit" variant="contained" color="primary">
             Check Followers
           </StyledButton>
-        </form>
+        </Box>
         {error && (
           <Typography color="error" variant="body1">
             {error}
@@ -111,9 +182,6 @@ function App() {
         {loading && <CircularProgress />}
         {results && (
           <Box mt={4}>
-            <Typography variant="h5" gutterBottom>
-              Results:
-            </Typography>
             <Grid container spacing={4}>
               <Grid item xs={12} md={6}>
                 <Typography variant="h6">Not Following You Back</Typography>
@@ -123,19 +191,17 @@ function App() {
                       <ListItem
                         button
                         key={index}
-                        onClick={() =>
-                          window.open(`https://www.instagram.com/${user.username}/`, '_blank')
-                        }
+                        onClick={() => window.open(`https://www.instagram.com/${user.username}/`, '_blank')}
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={`https://unavatar.io/instagram/${user.username}`}
+                            src={profilePictures[user.username]}
                             alt={user.username}
                           />
                         </ListItemAvatar>
                         <ListItemText
                           primary={user.username}
-                          secondary={`Followed on: ${new Date(user.timestamp * 1000).toLocaleString()}`}
+                          secondary={`Followed on: ${new Date(user.timestamp * 1000).toLocaleDateString()}`}
                         />
                       </ListItem>
                     ))}
@@ -150,19 +216,17 @@ function App() {
                       <ListItem
                         button
                         key={index}
-                        onClick={() =>
-                          window.open(`https://www.instagram.com/${user.username}/`, '_blank')
-                        }
+                        onClick={() => window.open(`https://www.instagram.com/${user.username}/`, '_blank')}
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={`https://unavatar.io/instagram/${user.username}`}
+                            src={profilePictures[user.username]}
                             alt={user.username}
                           />
                         </ListItemAvatar>
                         <ListItemText
                           primary={user.username}
-                          secondary={`Followed you on: ${new Date(user.timestamp * 1000).toLocaleString()}`}
+                          secondary={`Followed you on: ${new Date(user.timestamp * 1000).toLocaleDateString()}`}
                         />
                       </ListItem>
                     ))}
@@ -173,25 +237,29 @@ function App() {
           </Box>
         )}
         <Box mt={4} textAlign="center">
-          <Typography variant="body2">© 2024–25 Ammaar Alam. All rights reserved.</Typography>
+          <Typography variant="body2">© {new Date().getFullYear()} Ammaar Alam. All rights reserved.</Typography>
           <Box mt={2}>
-            <Button
-              color="primary"
-              href="https://github.com/Ammaar-Alam/doorUnlocker"
+            <IconButton
+              color="inherit"
+              href="https://github.com/Ammaar-Alam"
               target="_blank"
             >
-              GitHub
-            </Button>
-            <Button
-              color="primary"
+              <GitHubIcon />
+            </IconButton>
+            <IconButton
+              color="inherit"
               href="https://www.linkedin.com/in/Ammaar-Alam"
               target="_blank"
             >
-              LinkedIn
-            </Button>
-            <Button color="primary" href="https://ammaar.xyz" target="_blank">
-              Photography Portfolio
-            </Button>
+              <LinkedInIcon />
+            </IconButton>
+            <IconButton
+              color="inherit"
+              href="https://ammaar.xyz"
+              target="_blank"
+            >
+              <LanguageIcon />
+            </IconButton>
           </Box>
         </Box>
       </Container>

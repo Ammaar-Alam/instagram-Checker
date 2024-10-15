@@ -61,8 +61,16 @@ def check_followers():
         return jsonify({'error': 'An error occurred while processing the files.'}), 500
 
 def process_json(following_data, followers_data):
-    following_array = following_data.get('relationships_following', following_data)
-    followers_array = followers_data.get('relationships_followers', followers_data)
+    # Update to handle both dict and list inputs
+    if isinstance(following_data, dict) and 'relationships_following' in following_data:
+        following_array = following_data['relationships_following']
+    else:
+        following_array = following_data
+
+    if isinstance(followers_data, dict) and 'relationships_followers' in followers_data:
+        followers_array = followers_data['relationships_followers']
+    else:
+        followers_array = followers_data
 
     following_map = {}
     for user in following_array:

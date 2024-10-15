@@ -10,3 +10,4 @@ __pycache__/
 instance/
 *.log
 server/uploads/
+venv/

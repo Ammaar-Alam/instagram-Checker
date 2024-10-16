@@ -7,5 +7,11 @@ cd backend
 make
 cd ..
 
+echo "Building React frontend..."
+cd client
+npm install
+npm run build
+cd ..
+
 echo "Starting Gunicorn server..."
 gunicorn server.app:app

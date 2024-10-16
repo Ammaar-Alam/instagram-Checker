@@ -21,7 +21,7 @@ st = os.stat(C_EXECUTABLE)
 if not (st.st_mode & stat.S_IXUSR):
     raise PermissionError(f"C executable {C_EXECUTABLE} is not executable")
 
-app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path='')
+app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path='/')
 
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'uploads')
 
@@ -33,7 +33,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
-    if path != '' and os.path.exists(os.path.join(app.static_folder, path)):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     else:
         # Return index.html for all non-existing routes (for React Router)

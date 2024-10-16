@@ -1,1 +1,1 @@
-web: gunicorn server.app:app
+web: gcc -o backend/instagram-Checker backend/instagram-Checker.c && gunicorn server.app:app

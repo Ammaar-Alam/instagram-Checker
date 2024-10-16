@@ -17,7 +17,6 @@ The analysis is performed using a C program hosted on Heroku, providing a seamle
 - [Preparing JSON Files](#preparing-json-files)
 - [Contributing](#contributing)
 - [License](#license)
-- [Contact](#contact)
 
 ## Features
 
@@ -118,7 +117,3 @@ Contributions are welcome! Please follow these steps:
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-For any questions or feedback, please reach out to [your-email@example.com](mailto:your-email@example.com).

@@ -11,3 +11,4 @@ instance/
 *.log
 server/uploads/
 venv/
+client/build/

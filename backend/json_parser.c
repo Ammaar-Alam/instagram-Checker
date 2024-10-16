@@ -3,6 +3,7 @@
 /* Author: Ammaar Alam                                                */
 /*--------------------------------------------------------------------*/
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include "json_parser.h"
@@ -11,7 +12,7 @@
 char* readFile(const char* filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
-        printf("Error opening file %s.\n", filename);
+        printf("Error opening file %s. Error: %s\n", filename, strerror(errno));
         return NULL;
     }
 
@@ -37,9 +38,12 @@ void extractUsernames (const char* jsonData, SymTable_T table) {
     const char *pos = strstr(jsonData, "\"value\":");
     while (pos != NULL) {
         char username[100]; /* buffer to hold username */
-        sscanf(pos, "\"value\": \"%[^\"]\"", username); /* extract username */
-        SymTable_put(table, username, NULL); /* insert into hashtable */
-        pos = strstr(pos + 1, "\"value\":"); /* find next occurance  */
+        if (sscanf(pos, "\"value\": \"%99[^\"]\"", username) == 1) { /* extract username */
+            if (username[0] != '\0') { /* check if username is not empty */
+                SymTable_put(table, username, NULL); /* insert into hashtable */
+            }
+        }
+        pos = strstr(pos + 1, "\"value\":"); /* find next occurrence  */
     }
 }
 
@@ -49,7 +53,7 @@ static void printNonFollowers(const char *username, void *pvValue, void *pvExtra
         const char *message;
     } *data = pvExtra;
 
-    if (!SymTable_contains(data->otherTable, username)) {
+    if (username && username[0] != '\0' && !SymTable_contains(data->otherTable, username)) {
         printf("%s %s\n", username, data->message);
     }
 }

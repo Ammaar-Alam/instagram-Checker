@@ -7,16 +7,6 @@
 /*   This version uses a hash table with separate chaining to store   */
 /*   bindings.                                                        */
 /*--------------------------------------------------------------------*/
-/*--------------------------------------------------------------------*/
-/* symtable.h                                                         */
-/* Author: Ammaar Alam                                                */
-/*                                                                    */
-/* Description:                                                      */
-/*   This header file defines the SymTable abstract data type (ADT)   */
-/*   and declares all associated functions. The SymTable ADT provides */
-/*   an unordered collection of key-value bindings, where each key   */
-/*   is a unique string and each value is a void pointer.             */
-/*--------------------------------------------------------------------*/
 
 #ifndef HASHTABLE_H
 #define HASHTABLE_H

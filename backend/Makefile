@@ -16,6 +16,7 @@ all: $(TARGET)
 # Rule to link the program
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+	chmod +x $(TARGET)
 
 # Rules for compiling source files to object files
 main.o: main.c hashtable.h json_parser.h

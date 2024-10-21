@@ -80,16 +80,16 @@ static int SymTable_expand(SymTable_T oSymTable) {
 		return 0;
 
 
-	/*--------------------------------------------------------------------*/
-	/* replaced malloc w/ calloc -> calloc sets mem to 0, so removed loop */
+ /*--------------------------------------------------------------------*/
+ /* replaced malloc w/ calloc -> calloc sets mem to 0, so removed loop */
 
-	/* ppsNewBuckets = (struct Binding **)malloc(uNewBucketCount * sizeof(struct Binding *));  */
-	/* if (ppsNewBuckets == NULL)                                                              */
-	/*	   return 0;                                                                           */
-
-    /* set new buckets to NULL                                                                 */
-    /* for (i = 0; i < uNewBucketCount; i++)                                                   */
-    /*     ppsNewBuckets[i] = NULL;	                                                           */
+ /* ppsNewBuckets = (struct Binding **)malloc(uNewBucketCount * sizeof(struct Binding *));  */
+ /* if (ppsNewBuckets == NULL)                                                              */
+ /*	   return 0;                                                                       */
+	
+ /* set new buckets to NULL                                                                 */
+ /* for (i = 0; i < uNewBucketCount; i++)                                                   */
+ /*        ppsNewBuckets[i] = NULL;	                                                    */
 
 
     /* rehash all previous bindings into new buckets */

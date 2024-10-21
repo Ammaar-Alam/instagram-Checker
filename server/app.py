@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_FOLDER = os.path.join(BASE_DIR, '..', 'client', 'build')
 
 # path to the C executable
-C_EXECUTABLE = os.path.join(BASE_DIR, '..', 'backend', 'instagram-Checker')
+C_EXECUTABLE = os.path.join(BASE_DIR, '..', 'backend')
 
 if not os.path.exists(C_EXECUTABLE):
     raise FileNotFoundError(f"C executable not found at {C_EXECUTABLE}")

@@ -72,8 +72,7 @@ To run the application locally, follow these steps:
 
    ```bash
    cd ../server
-   npm install
-   npm start
+   python app.py
    ```
 
    Ensure that any necessary environment variables are set up for the server to run correctly.

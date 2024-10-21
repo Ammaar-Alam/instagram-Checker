@@ -1,4 +1,4 @@
-# [WIP] Instagram Follower Analyzer
+# Instagram Follower Analyzer
 
 ## Description
 
@@ -13,6 +13,7 @@ The analysis is performed using a C program hosted on Heroku, providing a seamle
 
 - [Features](#features)
 - [Accessing the Web Application](#accessing-the-web-application)
+- [Running Locally](#running-locally)
 - [Downloading Instagram Data](#downloading-instagram-data)
 - [Preparing JSON Files](#preparing-json-files)
 - [Contributing](#contributing)
@@ -31,6 +32,51 @@ You can access the Instagram Follower Analyzer directly through the following li
 [Instagram Follower Analyzer on Heroku](https://instagram-checker-b38e2b3eb69a.herokuapp.com/)
 
 This web application allows you to upload your JSON files and view the analysis results online.
+
+## Running Locally
+
+To run the application locally, follow these steps:
+
+1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/your-username/instagram-follower-analyzer.git
+   ```
+
+2. **Navigate to the Project Directory:**
+
+   ```bash
+   cd instagram-follower-analyzer
+   ```
+
+3. **Install Dependencies:**
+
+   Navigate to the client directory and install the necessary npm packages:
+
+   ```bash
+   cd client
+   npm install
+   ```
+
+4. **Start the Client:**
+
+   Run the following command to start the client-side application:
+
+   ```bash
+   npm start
+   ```
+
+5. **Start the Server:**
+
+   If you have a server component, navigate to the server directory and start the server:
+
+   ```bash
+   cd ../server
+   npm install
+   npm start
+   ```
+
+   Ensure that any necessary environment variables are set up for the server to run correctly.
 
 ## Downloading Instagram Data
 

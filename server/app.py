@@ -5,14 +5,14 @@ import json
 import stat
 import requests
 
-# abs path to the directory w/ app.py
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Adjust BASE_DIR to point to the parent directory of 'server'
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # Updated STATIC_FOLDER path
-STATIC_FOLDER = os.path.join(BASE_DIR, '..', 'client', 'build')
+STATIC_FOLDER = os.path.join(BASE_DIR, 'client', 'build')
 
-# path to the C executable
-C_EXECUTABLE = os.path.join(BASE_DIR, '..', 'backend')
+# Path to the C executable
+C_EXECUTABLE = os.path.join(BASE_DIR, 'backend', 'instagram-Checker')
 
 if not os.path.exists(C_EXECUTABLE):
     raise FileNotFoundError(f"C executable not found at {C_EXECUTABLE}")

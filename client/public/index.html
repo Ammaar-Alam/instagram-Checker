@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Instagram Follower Checker" />
     <title>Instagram Follower Checker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -33,6 +34,49 @@
         .instructions strong {
             color: #63b3ed;
         }
+        .social-links {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .social-links li a {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #2d3748;
+            border-radius: 8px;
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-links li a:hover {
+            background-color: #4a5568;
+            transform: translateY(-2px);
+        }
+
+        .social-links i {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #2d3748;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+            color: #a0aec0;
+        }
     </style>
 </head>
 <body>
@@ -49,6 +93,33 @@
             <li>Select <strong>Format: JSON</strong> and <strong>Date range: All time</strong>, then tap <strong>Submit request</strong>.</li>
             <li>You'll receive an email titled "Your Instagram Data" with a link to download your data. This might take up to 24 hours.</li>
         </ol>
+    </div>
+
+    <ul class="social-links">
+        <li>
+            <a href="https://ammaaralam.com" target="_blank">
+                <i class="fas fa-laptop-code"></i> Coding Portfolio
+            </a>
+        </li>
+        <li>
+            <a href="https://github.com/Ammaar-Alam/doorUnlocker" target="_blank">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/in/Ammaar-Alam" target="_blank">
+                <i class="fab fa-linkedin"></i> LinkedIn
+            </a>
+        </li>
+        <li>
+            <a href="https://ammaar.xyz" target="_blank">
+                <i class="fas fa-camera"></i> Photography
+            </a>
+        </li>
+    </ul>
+
+    <div class="footer">
+        <p>© 2024 Ammaar Alam. All rights reserved.</p>
     </div>
 </body>
 </html>

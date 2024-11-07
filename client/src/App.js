@@ -121,145 +121,165 @@ function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <AppBar position="static" color="primary">
-        <Toolbar>
-          <IconButton edge="start" color="inherit" aria-label="menu">
-            <InstagramIcon fontSize="large" />
-          </IconButton>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Instagram Follower Checker
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Container maxWidth="md">
-        <Box
-          component="form"
-          id="upload-form"
-          ref={formRef}
-          onSubmit={handleSubmit}
-          sx={{ mt: 4, textAlign: "center" }}
-        >
-          <Box mb={2}>
-            <Typography variant="subtitle1">Following JSON:</Typography>
-            <input
-              type="file"
-              accept=".json"
-              onChange={(e) => setFollowingFile(e.target.files[0])}
-              required
-              style={{ color: "#f8f7f9" }}
-            />
+      <Box sx={{ 
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <AppBar position="static" color="primary">
+          <Toolbar>
+            <IconButton edge="start" color="inherit" aria-label="menu">
+              <InstagramIcon fontSize="large" />
+            </IconButton>
+            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              Instagram Follower Checker
+            </Typography>
+            <IconButton color="inherit" href="https://ammaaralam.com" target="_blank">
+              <LanguageIcon />
+            </IconButton>
+            <IconButton color="inherit" href="https://github.com/Ammaar-Alam/doorUnlocker" target="_blank">
+              <GitHubIcon />
+            </IconButton>
+            <IconButton color="inherit" href="https://www.linkedin.com/in/Ammaar-Alam" target="_blank">
+              <LinkedInIcon />
+            </IconButton>
+            <IconButton color="inherit" href="https://ammaar.xyz" target="_blank">
+              <i className="fas fa-camera"></i>
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+
+        <Container maxWidth="md" sx={{ flex: 1, mb: 4 }}>
+          <Box
+            component="form"
+            id="upload-form"
+            ref={formRef}
+            onSubmit={handleSubmit}
+            sx={{ mt: 4, textAlign: "center" }}
+          >
+            <Box mb={2}>
+              <Typography variant="subtitle1">Following JSON:</Typography>
+              <input
+                type="file"
+                accept=".json"
+                onChange={(e) => setFollowingFile(e.target.files[0])}
+                required
+                style={{ color: "#f8f7f9" }}
+              />
+            </Box>
+            <Box mb={2}>
+              <Typography variant="subtitle1">Followers JSON:</Typography>
+              <input
+                type="file"
+                accept=".json"
+                onChange={(e) => setFollowersFile(e.target.files[0])}
+                required
+                style={{ color: "#f8f7f9" }}
+              />
+            </Box>
+            <StyledButton type="submit" variant="contained" color="primary">
+              Check Followers
+            </StyledButton>
           </Box>
-          <Box mb={2}>
-            <Typography variant="subtitle1">Followers JSON:</Typography>
-            <input
-              type="file"
-              accept=".json"
-              onChange={(e) => setFollowersFile(e.target.files[0])}
-              required
-              style={{ color: "#f8f7f9" }}
-            />
-          </Box>
-          <StyledButton type="submit" variant="contained" color="primary">
-            Check Followers
-          </StyledButton>
-        </Box>
-        {error && (
-          <Typography color="error" variant="body1">
-            {error}
-          </Typography>
-        )}
-        {loading && (
-          <Box textAlign="center" mt={4}>
-            <CircularProgress />
-          </Box>
-        )}
-        {results && (
-          <Box mt={4}>
-            <Grid container spacing={4}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6">Not Following You Back</Typography>
-                <StyledPaper style={{ maxHeight: 400, overflow: "auto" }}>
-                  <List>
-                    {results.notFollowingBack.map(
-                      (username, index) =>
-                        username && (
-                          <ListItem
-                            button
-                            key={index}
-                            onClick={() =>
-                              window.open(
-                                `https://www.instagram.com/${username}/`,
-                                "_blank"
-                              )
-                            }
-                          >
-                            <ListItemAvatar>
-                              <Avatar sx={{ bgcolor: "#E4405F" }}>
-                                <InstagramIcon />
-                              </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText
-                              primary={username}
-                              secondary=" "
-                            />
-                          </ListItem>
-                        )
-                    )}
-                  </List>
-                </StyledPaper>
+          {error && (
+            <Typography color="error" variant="body1">
+              {error}
+            </Typography>
+          )}
+          {loading && (
+            <Box textAlign="center" mt={4}>
+              <CircularProgress />
+            </Box>
+          )}
+          {results && (
+            <Box mt={4}>
+              <Grid container spacing={4}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="h6">Not Following You Back</Typography>
+                  <StyledPaper style={{ maxHeight: 400, overflow: "auto" }}>
+                    <List>
+                      {results.notFollowingBack.map(
+                        (username, index) =>
+                          username && (
+                            <ListItem
+                              button
+                              key={index}
+                              onClick={() =>
+                                window.open(
+                                  `https://www.instagram.com/${username}/`,
+                                  "_blank"
+                                )
+                              }
+                            >
+                              <ListItemAvatar>
+                                <Avatar sx={{ bgcolor: "#E4405F" }}>
+                                  <InstagramIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText
+                                primary={username}
+                                secondary=" "
+                              />
+                            </ListItem>
+                          )
+                      )}
+                    </List>
+                  </StyledPaper>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="h6">You're Not Following Back</Typography>
+                  <StyledPaper style={{ maxHeight: 400, overflow: "auto" }}>
+                    <List>
+                      {results.notFollowedByYou.map(
+                        (username, index) =>
+                          username && (
+                            <ListItem
+                              button
+                              key={index}
+                              onClick={() =>
+                                window.open(
+                                  `https://www.instagram.com/${username}/`,
+                                  "_blank"
+                                )
+                              }
+                            >
+                              <ListItemAvatar>
+                                <Avatar sx={{ bgcolor: "#E4405F" }}>
+                                  <InstagramIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText
+                                primary={username}
+                                secondary=" "
+                              />
+                            </ListItem>
+                          )
+                      )}
+                    </List>
+                  </StyledPaper>
+                </Grid>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6">You're Not Following Back</Typography>
-                <StyledPaper style={{ maxHeight: 400, overflow: "auto" }}>
-                  <List>
-                    {results.notFollowedByYou.map(
-                      (username, index) =>
-                        username && (
-                          <ListItem
-                            button
-                            key={index}
-                            onClick={() =>
-                              window.open(
-                                `https://www.instagram.com/${username}/`,
-                                "_blank"
-                              )
-                            }
-                          >
-                            <ListItemAvatar>
-                              <Avatar sx={{ bgcolor: "#E4405F" }}>
-                                <InstagramIcon />
-                              </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText
-                              primary={username}
-                              secondary=" "
-                            />
-                          </ListItem>
-                        )
-                    )}
-                  </List>
-                </StyledPaper>
-              </Grid>
-            </Grid>
-          </Box>
-        )}
-      </Container>
-      <Box 
-        component="footer" 
-        sx={{
-          mt: 8,
-          py: 3,
-          px: 2,
-          backgroundColor: 'background.paper',
-          borderTop: '1px solid',
-          borderColor: 'divider'
-        }}
-      >
-        <Container maxWidth="md">
-          <Typography variant="body2" align="center">
-            © {new Date().getFullYear()} Ammaar Alam. All rights reserved.
-          </Typography>
+            </Box>
+          )}
         </Container>
+
+        <Box 
+          component="footer" 
+          sx={{
+            py: 3,
+            px: 2,
+            mt: 'auto',
+            backgroundColor: 'background.paper',
+            borderTop: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <Container maxWidth="md">
+            <Typography variant="body2" align="center">
+              © {new Date().getFullYear()} Ammaar Alam. All rights reserved.
+            </Typography>
+          </Container>
+        </Box>
       </Box>
     </ThemeProvider>
   );

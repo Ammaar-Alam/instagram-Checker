@@ -257,27 +257,35 @@ function App() {
             </Grid>
           </Box>
         )}
-        <Box mt={4} textAlign="center">
-          <Typography variant="body2">
+      </Container>
+      <Box 
+        component="footer" 
+        sx={{
+          mt: 8,
+          py: 3,
+          px: 2,
+          backgroundColor: 'background.paper',
+          borderTop: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Container maxWidth="md">
+          <Typography variant="body2" align="center">
             © {new Date().getFullYear()} Ammaar Alam. All rights reserved.
           </Typography>
-          <Box mt={2}>
+          <Box mt={2} display="flex" justifyContent="center" gap={2}>
             <IconButton color="inherit" href="https://github.com/Ammaar-Alam" target="_blank">
               <GitHubIcon />
             </IconButton>
-            <IconButton
-              color="inherit"
-              href="https://www.linkedin.com/in/Ammaar-Alam"
-              target="_blank"
-            >
+            <IconButton color="inherit" href="https://www.linkedin.com/in/Ammaar-Alam" target="_blank">
               <LinkedInIcon />
             </IconButton>
             <IconButton color="inherit" href="https://ammaar.xyz" target="_blank">
               <LanguageIcon />
             </IconButton>
           </Box>
-        </Box>
-      </Container>
+        </Container>
+      </Box>
     </ThemeProvider>
   );
 }

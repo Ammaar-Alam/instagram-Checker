@@ -129,20 +129,6 @@ function App() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Instagram Follower Checker
           </Typography>
-          {/* social links in AppBar */}
-          <IconButton color="inherit" href="https://github.com/Ammaar-Alam" target="_blank">
-            <GitHubIcon />
-          </IconButton>
-          <IconButton
-            color="inherit"
-            href="https://www.linkedin.com/in/Ammaar-Alam"
-            target="_blank"
-          >
-            <LinkedInIcon />
-          </IconButton>
-          <IconButton color="inherit" href="https://ammaar.xyz" target="_blank">
-            <LanguageIcon />
-          </IconButton>
         </Toolbar>
       </AppBar>
       <Container maxWidth="md">
@@ -273,17 +259,6 @@ function App() {
           <Typography variant="body2" align="center">
             © {new Date().getFullYear()} Ammaar Alam. All rights reserved.
           </Typography>
-          <Box mt={2} display="flex" justifyContent="center" gap={2}>
-            <IconButton color="inherit" href="https://github.com/Ammaar-Alam" target="_blank">
-              <GitHubIcon />
-            </IconButton>
-            <IconButton color="inherit" href="https://www.linkedin.com/in/Ammaar-Alam" target="_blank">
-              <LinkedInIcon />
-            </IconButton>
-            <IconButton color="inherit" href="https://ammaar.xyz" target="_blank">
-              <LanguageIcon />
-            </IconButton>
-          </Box>
         </Container>
       </Box>
     </ThemeProvider>

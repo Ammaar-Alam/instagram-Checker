@@ -160,7 +160,7 @@ function App() {
                 Coding Portfolio / Personal Site
               </NavButton>
               <NavButton
-                href="https://github.com/Ammaar-Alam/doorUnlocker"
+                href="https://github.com/Ammaar-Alam/instagram-Checker"
                 target="_blank"
                 startIcon={<GitHubIcon />}
               >

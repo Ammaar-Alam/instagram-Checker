@@ -9,6 +9,8 @@ package-lock.json
 */package-lock.json
 
 # Build and Compilation Output
+backend/*.o
+backend/instagram-Checker
 out
 raw_evaluations.json
 processed_snippets.json

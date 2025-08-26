@@ -2,12 +2,14 @@
 
 ## Description
 
-Instagram Follower Analyzer is a web application that allows users to download their Instagram followers and following data as JSON files and analyze them to identify:
+Instagram Follower Analyzer is a web application that allows users to analyze their Instagram followers/following to identify:
 
 - **Users who do not follow you back**
 - **Accounts you do not follow back**
 
 The analysis is performed using a C program hosted on Heroku, providing a seamless experience without the need for local installation or compilation.
+
+Note: The Heroku dyno may be asleep when first visiting the app. The initial page load or first request can take up to ~1 minute to start the dyno.
 
 ## Table of Contents
 
@@ -15,13 +17,14 @@ The analysis is performed using a C program hosted on Heroku, providing a seamle
 - [Accessing the Web Application](#accessing-the-web-application)
 - [Running Locally](#running-locally)
 - [Downloading Instagram Data](#downloading-instagram-data)
-- [Preparing JSON Files](#preparing-json-files)
+- [Uploading Your Data (ZIP or JSON)](#uploading-your-data-zip-or-json)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Features
 
-- **Download Followers and Following Data:** Easily obtain your Instagram followers and following information in JSON format.
+- **Upload Instagram ZIP directly:** Upload the Instagram "Download your information" ZIP; the server extracts the correct files automatically (recommended).
+- **Upload Followers and Following JSON:** Alternatively, upload the two JSON files manually.
 - **Identify Non-Mutual Connections:** Get clear lists of who doesn't follow you back and whom you don't follow back.
 - **Web-Based Analyzer:** Access the tool directly through a web interface without the need for local setup.
 
@@ -31,7 +34,9 @@ You can access the Instagram Follower Analyzer directly through the following li
 
 [Instagram Follower Analyzer on Heroku](https://instagram-checker-b38e2b3eb69a.herokuapp.com/)
 
-This web application allows you to upload your JSON files and view the analysis results online.
+This web application allows you to upload your Instagram ZIP or JSON files and view the analysis results online.
+
+Cold start: If the site seems slow to respond at first, it’s likely starting the Heroku dyno. Give it up to ~1 minute and it will speed up after that.
 
 ## Running Locally
 
@@ -112,26 +117,21 @@ To analyze your Instagram followers and following, you need to download your dat
 
    You'll receive an email titled "Your Instagram Data" with a link to download your data. This might take up to 24 hours.
 
-## Preparing JSON Files
+## Uploading Your Data (ZIP or JSON)
 
-1. **Download the Data:**
+Option A — Upload the ZIP (recommended):
 
-   Click on the download link in your email and save the ZIP file to your computer.
+1. Request your data from Instagram as described below.
+2. When you receive the email, download the ZIP file.
+3. In the web app, choose "Upload Instagram ZIP" and upload the ZIP directly. The server will locate `followers.json` and `following.json` automatically and run the analysis.
 
-2. **Extract the ZIP File:**
+Option B — Upload the JSON files manually:
 
-   ```bash
-   unzip your_instagram_data.zip -d instagram_data
-   ```
-
-3. **Locate JSON Files:**
-
-   After extraction, navigate to the `instagram_data` directory to find the following JSON files:
-
+1. Extract the ZIP locally.
+2. Find the two files in the export (often under `connections/followers_and_following/`):
    - `followers.json`
    - `following.json`
-
-   These files are required for analysis on the web application.
+3. In the web app, choose the JSON upload option and select both files.
 
 ## Contributing
 

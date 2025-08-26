@@ -43,6 +43,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import Grow from '@mui/material/Grow';
 import { keyframes } from '@mui/system';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
 
 // Portfolio-inspired dark theme
 const darkTheme = createTheme({
@@ -126,6 +127,10 @@ function App() {
   const [filterText, setFilterText] = useState('');
   const [activeStep, setActiveStep] = useState(0);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState('');
+  const CYAN = '#8ffcff';
+  const BLUE = '#0284c7';
 
   const DYI_URL = 'https://accountscenter.instagram.com/info_and_permissions/dyi/?entry_point=notification';
 
@@ -135,7 +140,7 @@ function App() {
     '100%': { opacity: 1, transform: 'translateY(0)' }
   });
 
-  const TutorialImage = ({ step }) => {
+  const TutorialImage = ({ step, onOpen }) => {
     const stepStr = String(step).padStart(2, '0');
     const candidates = [
       // Preferred numeric filenames e.g., 01.png, 02.png, ...
@@ -150,18 +155,24 @@ function App() {
     const [index, setIndex] = useState(0);
     const [visible, setVisible] = useState(true);
     const [loaded, setLoaded] = useState(false);
+    const [needsExpand, setNeedsExpand] = useState(false);
+    const containerRef = useRef(null);
     if (!visible) return null;
     return (
-      <Box sx={{
+      <Box ref={containerRef} sx={{
         mt: 1,
         mb: 2,
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 2,
         overflow: 'hidden',
-        minHeight: { xs: 220, sm: 300, md: 460 },
+        minHeight: { xs: 220, sm: 280 },
+        maxHeight: { xs: '50vh', md: '56vh' },
         position: 'relative',
-        animation: `${fadeSlideIn} 220ms ease`
+        animation: `${fadeSlideIn} 220ms ease`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
         {!loaded && (
           <Skeleton variant="rectangular" sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(255,255,255,0.04)' }} />
@@ -169,13 +180,48 @@ function App() {
         {/* eslint-disable-next-line jsx-a11y/alt-text */}
         <img
           src={candidates[index]}
-          style={{ width: '100%', height: 'auto', display: 'block' }}
-          onLoad={() => setLoaded(true)}
+          style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block', cursor: 'zoom-in' }}
+          onLoad={(e) => {
+            setLoaded(true);
+            try {
+              const natW = e.target.naturalWidth;
+              const natH = e.target.naturalHeight;
+              const cont = containerRef.current;
+              if (cont) {
+                const cw = cont.clientWidth;
+                const ch = cont.clientHeight;
+                const scale = Math.min(cw / natW, ch / natH);
+                setNeedsExpand(scale < 1);
+              }
+            } catch {}
+          }}
           onError={() => {
             if (index < candidates.length - 1) setIndex(index + 1);
             else setVisible(false);
           }}
+          onClick={() => onOpen && onOpen(candidates[index])}
         />
+        {loaded && needsExpand && (
+          step === 4 || step === 5 ? (
+            <Box sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none'
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.25, py: 0.75, borderRadius: 999, bgcolor: 'rgba(0,0,0,0.55)', color: '#e5e5e5', fontSize: 12, border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(1px)' }}>
+                <ZoomInIcon fontSize="small" />
+                Click to expand
+              </Box>
+            </Box>
+          ) : (
+            <Box sx={{ position: 'absolute', bottom: 8, right: 8, px: 1.25, py: 0.5, borderRadius: 1, bgcolor: 'rgba(0,0,0,0.55)', color: '#e5e5e5', fontSize: 12, border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(1px)' }}>
+              Click to expand
+            </Box>
+          )
+        )}
       </Box>
     );
   };
@@ -354,7 +400,7 @@ function App() {
             {/* Left column: alerts, uploader, instructions */}
             <Grid item xs={12} md={6}>
           {/* Cold start note */}
-          <Alert severity="info" sx={{ backgroundColor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+          <Alert severity="info" sx={{ backgroundColor: 'background.paper', border: '1px solid', borderColor: 'divider', mb: 2 }}>
             Note: First load can take up to ~1 minute due to Heroku dyno cold start.
           </Alert>
 
@@ -366,7 +412,8 @@ function App() {
               backgroundColor: 'background.paper',
               borderRadius: 2,
               border: '1px solid',
-              borderColor: 'divider'
+              borderColor: 'divider',
+              mt: 2
             }}
           >
             <Tabs
@@ -377,7 +424,7 @@ function App() {
               sx={{ mb: 2 }}
             >
               <Tab value="zip" label="Upload Instagram ZIP (Recommended)" />
-              <Tab value="json" label="Upload followers (JSON/HTML) + following (JSON/HTML)" />
+              <Tab value="json" label="Upload Followers + Following (Legacy)" />
             </Tabs>
             {error && (
               <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
@@ -399,7 +446,7 @@ function App() {
               {uploadMode === 'zip' ? (
                 <>
                   <Box mb={2}>
-                    <Typography variant="subtitle1">Instagram Data ZIP (JSON or HTML exports supported):</Typography>
+                    <Typography variant="subtitle1">Instagram Data ZIP (Just upload the ZIP file, no need to extract it):</Typography>
                     <input
                       type="file"
                       accept=".zip,application/zip,application/x-zip-compressed"
@@ -456,7 +503,8 @@ function App() {
               backgroundColor: 'background.paper',
               borderRadius: 2,
               border: '1px solid',
-              borderColor: 'divider'
+              borderColor: 'divider',
+              mt: 2
             }}
           >
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #8ffcff, #4dc6ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -483,50 +531,54 @@ function App() {
             maxWidth="md"
             TransitionComponent={Grow}
             transitionDuration={200}
-            BackdropProps={{ sx: { backgroundColor: 'rgba(10,10,10,0.75)', backdropFilter: 'blur(2px)' } }}
+            BackdropProps={{ sx: { backgroundColor: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(3px)' } }}
             PaperProps={{
               sx: {
-                backgroundColor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
+                backgroundColor: 'background.default',
+                border: '1px solid rgba(143, 252, 255, 0.22)',
                 borderRadius: 2,
-                boxShadow: 8
+                boxShadow: '0 0 0 1px rgba(143, 252, 255, 0.18), 0 0 14px rgba(143, 252, 255, 0.10)',
+                height: { xs: '72vh', md: '68vh' },
+                display: 'flex',
+                flexDirection: 'column'
               }
             }}
           >
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'transparent' }}>
               <Typography variant="h6" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #8ffcff, #4dc6ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{steps[activeStep]?.label}</Typography>
               <IconButton onClick={() => setTutorialOpen(false)} size="small">
                 <CloseIcon />
               </IconButton>
             </DialogTitle>
-            <DialogContent dividers>
+            <DialogContent sx={{ bgcolor: 'transparent', pt: 1, flex: 1, overflowY: 'auto', minHeight: 0 }}>
               <Box key={activeStep} sx={{ animation: `${fadeSlideIn} 220ms ease` }}>
-                {steps[activeStep]?.withImage && <TutorialImage step={activeStep + 1} />}
-                <Typography>{steps[activeStep]?.description}</Typography>
+                {steps[activeStep]?.withImage && <TutorialImage step={activeStep + 1} onOpen={(src) => { setLightboxSrc(src); setLightboxOpen(true); }} />}
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {steps[activeStep]?.description}
+                </Typography>
               </Box>
             </DialogContent>
-            <DialogActions sx={{ px: 2 }}>
+            <DialogActions sx={{ px: 2, bgcolor: 'transparent' }}>
               <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                 <Button size="small" onClick={() => setActiveStep((s) => Math.max(0, s - 1))} disabled={activeStep === 0}>
                   Back
                 </Button>
                 {/* Custom dots with check marks */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
                   {steps.map((_, i) => {
                     const completed = i < activeStep;
                     const isActive = i === activeStep;
                     return (
-                      <Box key={i} onClick={() => setActiveStep(i)} sx={{ position: 'relative', width: isActive ? 14 : 10, height: isActive ? 14 : 10, cursor: 'pointer' }}>
+                      <Box key={i} onClick={() => setActiveStep(i)} sx={{ position: 'relative', width: isActive ? 18 : 14, height: isActive ? 18 : 14, cursor: 'pointer' }}>
                         <Box sx={{
                           width: '100%', height: '100%', borderRadius: '50%',
-                          border: '1.5px solid',
-                          borderColor: completed || isActive ? 'primary.main' : 'divider',
-                          bgcolor: completed ? 'rgba(143,252,255,0.15)' : 'transparent',
+                          border: '2px solid',
+                          borderColor: isActive ? CYAN : completed ? BLUE : 'divider',
+                          bgcolor: completed ? BLUE : 'transparent',
                           transition: 'all 200ms ease'
                         }} />
                         {completed && (
-                          <CheckRoundedIcon fontSize="inherit" sx={{ position: 'absolute', inset: -2, color: 'primary.main' }} />
+                          <CheckRoundedIcon sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#ffffff', fontSize: 12 }} />
                         )}
                       </Box>
                     );
@@ -543,6 +595,24 @@ function App() {
                 )}
               </Box>
             </DialogActions>
+          </Dialog>
+          {/* Lightbox for tutorial images */}
+          <Dialog
+            open={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+            fullWidth
+            maxWidth="lg"
+            BackdropProps={{ sx: { backgroundColor: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(2px)' } }}
+            PaperProps={{ sx: { backgroundColor: 'transparent', boxShadow: 'none' } }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0 }}>
+              {/* eslint-disable-next-line jsx-a11y/alt-text */}
+              <img
+                src={lightboxSrc}
+                style={{ maxWidth: '92vw', maxHeight: '92vh', objectFit: 'contain', display: 'block', cursor: 'zoom-out' }}
+                onClick={() => setLightboxOpen(false)}
+              />
+            </Box>
           </Dialog>
             </Grid>
 

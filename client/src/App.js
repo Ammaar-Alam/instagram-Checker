@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -22,11 +22,17 @@ import {
   Tabs,
   Tab,
   Alert,
+  Chip,
+  Divider,
+  TextField,
+  InputAdornment,
+  ListItemButton,
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import LaptopIcon from '@mui/icons-material/Laptop';
+import SearchIcon from '@mui/icons-material/Search';
 
 // Portfolio-inspired dark theme
 const darkTheme = createTheme({
@@ -105,6 +111,9 @@ function App() {
   const [zipFile, setZipFile] = useState(null);
   const [uploadMode, setUploadMode] = useState('zip'); // 'zip' | 'json'
   const formRef = useRef(); // Add this line to declare formRef
+  const resultsRef = useRef();
+  const [activeResultTab, setActiveResultTab] = useState('notFollowingBack');
+  const [filterText, setFilterText] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -158,6 +167,13 @@ function App() {
       setLoading(false);
     }
   };
+
+  // Auto-scroll to results when populated
+  useEffect(() => {
+    if (results && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [results]);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -216,16 +232,16 @@ function App() {
           </Toolbar>
         </AppBar>
 
-        <Container 
-          maxWidth="md" 
-          sx={{ 
+        <Container
+          maxWidth="lg"
+          sx={{
             flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4,
             py: 4
           }}
         >
+          <Grid container spacing={4}>
+            {/* Left column: alerts, uploader, instructions */}
+            <Grid item xs={12} md={6}>
           {/* Cold start note */}
           <Alert severity="info" sx={{ backgroundColor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
             Note: First load can take up to ~1 minute due to Heroku dyno cold start.
@@ -345,87 +361,104 @@ function App() {
               <li>You'll receive an email titled "Your Instagram Data" with a link to download your data. This might take up to 24 hours.</li>
             </ol>
           </Paper>
+            </Grid>
 
-          {/* Results Section */}
-          {results && (
-            <Paper 
-              elevation={0}
-              sx={{ 
-                p: 3, 
-                backgroundColor: 'background.paper',
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider'
-              }}
-            >
-              <Grid container spacing={4}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6">Not Following You Back</Typography>
-                  <StyledPaper style={{ maxHeight: 400, overflow: "auto" }}>
-                    <List>
-                      {results.notFollowingBack.map(
-                        (username, index) =>
-                          username && (
-                            <ListItem
-                              button
-                              key={index}
-                              onClick={() =>
-                                window.open(
-                                  `https://www.instagram.com/${username}/`,
-                                  "_blank"
-                                )
-                              }
-                            >
-                              <ListItemAvatar>
-                                <Avatar sx={{ bgcolor: "#E4405F" }}>
-                                  <InstagramIcon />
-                                </Avatar>
-                              </ListItemAvatar>
-                              <ListItemText
-                                primary={username}
-                                secondary=" "
-                              />
-                            </ListItem>
-                          )
-                      )}
-                    </List>
-                  </StyledPaper>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6">You're Not Following Back</Typography>
-                  <StyledPaper style={{ maxHeight: 400, overflow: "auto" }}>
-                    <List>
-                      {results.notFollowedByYou.map(
-                        (username, index) =>
-                          username && (
-                            <ListItem
-                              button
-                              key={index}
-                              onClick={() =>
-                                window.open(
-                                  `https://www.instagram.com/${username}/`,
-                                  "_blank"
-                                )
-                              }
-                            >
-                              <ListItemAvatar>
-                                <Avatar sx={{ bgcolor: "#E4405F" }}>
-                                  <InstagramIcon />
-                                </Avatar>
-                              </ListItemAvatar>
-                              <ListItemText
-                                primary={username}
-                                secondary=" "
-                              />
-                            </ListItem>
-                          )
-                      )}
-                    </List>
-                  </StyledPaper>
-                </Grid>
-              </Grid>
-            </Paper>
-          )}
+            {/* Right column: results panel (persistent) */}
+            <Grid item xs={12} md={6} ref={resultsRef}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  backgroundColor: 'background.paper',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  position: { md: 'sticky' },
+                  top: { md: 16 },
+                  maxHeight: { md: 'calc(100vh - 32px)' },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #8ffcff, #4dc6ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    Results
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Chip label={`Not following you back: ${results ? results.notFollowingBack.length : 0}`} variant="outlined" color="primary" />
+                    <Chip label={`You're not following: ${results ? results.notFollowedByYou.length : 0}`} variant="outlined" color="primary" />
+                  </Box>
+                </Box>
+
+                <Tabs
+                  value={activeResultTab}
+                  onChange={(e, v) => setActiveResultTab(v)}
+                  textColor="primary"
+                  indicatorColor="primary"
+                >
+                  <Tab value="notFollowingBack" label="Not Following You Back" />
+                  <Tab value="notFollowedByYou" label="You're Not Following Back" />
+                </Tabs>
+
+                <TextField
+                  placeholder="Filter by username"
+                  value={filterText}
+                  onChange={(e) => setFilterText(e.target.value)}
+                  size="small"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon fontSize="small" />
+                      </InputAdornment>
+                    )
+                  }}
+                />
+
+                <Divider />
+
+                <StyledPaper sx={{ flex: 1, overflow: 'auto' }}>
+                  <List>
+                    {(() => {
+                      const data = results ? (activeResultTab === 'notFollowingBack' ? results.notFollowingBack : results.notFollowedByYou) : [];
+                      const filtered = filterText
+                        ? data.filter((u) => u && u.toLowerCase().includes(filterText.toLowerCase()))
+                        : data;
+                      if (!results) {
+                        return (
+                          <ListItem>
+                            <ListItemText primary="No results yet" secondary="Upload your Instagram ZIP or JSON files to see results here." />
+                          </ListItem>
+                        );
+                      }
+                      if (filtered.length === 0) {
+                        return (
+                          <ListItem>
+                            <ListItemText primary="No usernames match your filter." />
+                          </ListItem>
+                        );
+                      }
+                      return filtered.map((username, index) => (
+                        username && (
+                          <ListItemButton
+                            key={`${username}-${index}`}
+                            onClick={() => window.open(`https://www.instagram.com/${username}/`, "_blank")}
+                          >
+                            <ListItemAvatar>
+                              <Avatar sx={{ bgcolor: "#E4405F" }}>
+                                <InstagramIcon />
+                              </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText primary={username} />
+                          </ListItemButton>
+                        )
+                      ));
+                    })()}
+                  </List>
+                </StyledPaper>
+              </Paper>
+            </Grid>
+          </Grid>
         </Container>
 
         <Box 

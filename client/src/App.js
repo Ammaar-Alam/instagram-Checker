@@ -37,6 +37,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import LaptopIcon from '@mui/icons-material/Laptop';
 import SearchIcon from '@mui/icons-material/Search';
+import LaunchIcon from '@mui/icons-material/Launch';
 
 // Portfolio-inspired dark theme
 const darkTheme = createTheme({
@@ -539,8 +540,8 @@ function App() {
 
                 <Divider />
 
-                <StyledPaper sx={{ flex: 1, overflow: 'auto' }}>
-                  <List>
+                <StyledPaper sx={{ flex: 1, overflow: 'auto', maxHeight: { xs: 360, md: 'calc(100vh - 260px)' } }}>
+                  <List dense disablePadding sx={{ p: 1 }}>
                     {(() => {
                       const data = results ? (activeResultTab === 'notFollowingBack' ? results.notFollowingBack : results.notFollowedByYou) : [];
                       const filtered = filterText
@@ -548,14 +549,14 @@ function App() {
                         : data;
                       if (!results) {
                         return (
-                          <ListItem>
-                            <ListItemText primary="No results yet" secondary="Upload your Instagram ZIP or JSON files to see results here." />
+                          <ListItem sx={{ px: 1.5, py: 1 }}>
+                            <ListItemText primary="No results yet" secondary="Upload your Instagram ZIP or JSON/HTML files to see results here." />
                           </ListItem>
                         );
                       }
                       if (filtered.length === 0) {
                         return (
-                          <ListItem>
+                          <ListItem sx={{ px: 1.5, py: 1 }}>
                             <ListItemText primary="No usernames match your filter." />
                           </ListItem>
                         );
@@ -565,13 +566,36 @@ function App() {
                           <ListItemButton
                             key={`${username}-${index}`}
                             onClick={() => window.open(`https://www.instagram.com/${username}/`, "_blank")}
+                            sx={{
+                              mb: 1,
+                              border: '1px solid',
+                              borderColor: 'divider',
+                              borderRadius: 1.5,
+                              bgcolor: 'background.default',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                borderColor: 'primary.main',
+                                boxShadow: '0 0 12px rgba(143, 252, 255, 0.25)',
+                                transform: 'translateY(-1px)'
+                              }
+                            }}
                           >
                             <ListItemAvatar>
-                              <Avatar sx={{ bgcolor: "#E4405F" }}>
+                              <Avatar sx={{
+                                bgcolor: 'transparent',
+                                backgroundImage: 'linear-gradient(135deg, #E4405F, #fd1d1d)',
+                                color: '#fff'
+                              }}>
                                 <InstagramIcon />
                               </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primary={username} />
+                            <ListItemText
+                              primary={username}
+                              secondary="Open profile in a new tab"
+                              primaryTypographyProps={{ fontWeight: 600 }}
+                              secondaryTypographyProps={{ color: 'text.secondary' }}
+                            />
+                            <LaunchIcon fontSize="small" sx={{ color: 'text.secondary', ml: 1 }} />
                           </ListItemButton>
                         )
                       ));

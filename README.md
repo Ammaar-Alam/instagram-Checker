@@ -23,8 +23,8 @@ Note: The Heroku dyno may be asleep when first visiting the app. The initial pag
 
 ## Features
 
-- **Upload Instagram ZIP directly:** Upload the Instagram "Download your information" ZIP; the server extracts the correct files automatically (recommended).
-- **Upload Followers and Following JSON:** Alternatively, upload the two JSON files manually.
+- **Upload Instagram ZIP directly:** Upload the Instagram "Download your information" ZIP; the server extracts the correct files automatically (recommended). Supports both JSON and HTML exports.
+- **Upload Followers and Following JSON/HTML:** Alternatively, upload the two files manually in either JSON or HTML format.
 - **Identify Non-Mutual Connections:** Get clear lists of who doesn't follow you back and whom you don't follow back.
 - **Web-Based Analyzer:** Access the tool directly through a web interface without the need for local setup.
 
@@ -129,15 +129,15 @@ Option A — Upload the ZIP (recommended):
 
 1. Request your data from Instagram as described below.
 2. When you receive the email, download the ZIP file.
-3. In the web app, choose "Upload Instagram ZIP" and upload the ZIP directly. The server will locate `followers.json` and `following.json` automatically and run the analysis.
+3. In the web app, choose "Upload Instagram ZIP" and upload the ZIP directly. The server will locate followers/following in JSON or HTML and run the analysis.
 
-Option B — Upload the JSON files manually:
+Option B — Upload the files manually (JSON or HTML):
 
 1. Extract the ZIP locally.
 2. Find the two files in the export (often under `connections/followers_and_following/`):
-   - `followers.json`
-   - `following.json`
-3. In the web app, choose the JSON upload option and select both files.
+   - `followers.json` or `followers.html`
+   - `following.json` or `following.html`
+3. In the web app, choose the manual upload option and select both files.
 
 ## Contributing
 

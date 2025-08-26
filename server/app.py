@@ -7,6 +7,7 @@ import requests
 import zipfile
 import tempfile
 import io
+import re
 
 # Adjust BASE_DIR to point to the parent directory of 'server'
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -52,14 +53,49 @@ def check_followers():
         following_file = request.files['following']
         followers_file = request.files['followers']
 
-        # save uploaded files
-        following_path = os.path.join(app.config['UPLOAD_FOLDER'], 'following.json')
-        followers_path = os.path.join(app.config['UPLOAD_FOLDER'], 'followers.json')
-        following_file.save(following_path)
-        followers_file.save(followers_path)
+        def extract_usernames_from_html_bytes(b: bytes):
+            try:
+                text = b.decode('utf-8', errors='ignore')
+            except Exception:
+                text = str(b)
+            # find profile links like https://www.instagram.com/username/
+            candidates = set(re.findall(r"instagram\\.com/([A-Za-z0-9._]+)/", text))
+            excluded = {
+                'accounts', 'about', 'developer', 'explore', 'reels', 'stories',
+                'legal', 'privacy', 'terms', 'directory', 'oauth', 'graphql',
+                'i', 'p', 'web', 'emails', 'security', 'help'
+            }
+            return [u for u in candidates if u not in excluded]
+
+        def write_synthetic_json(usernames, dest_path):
+            data = {"list": [{"value": u} for u in usernames]}
+            with open(dest_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            following_dest = os.path.join(tmpdir, 'following.json')
+            followers_dest = os.path.join(tmpdir, 'followers.json')
+
+            # Prepare following file (accept .json or .html)
+            name_lower = (following_file.filename or '').lower()
+            if name_lower.endswith('.html') or (following_file.mimetype and 'html' in following_file.mimetype):
+                content = following_file.read()
+                usernames = extract_usernames_from_html_bytes(content)
+                write_synthetic_json(usernames, following_dest)
+            else:
+                following_file.save(following_dest)
+
+            # Prepare followers file (accept .json or .html)
+            name_lower = (followers_file.filename or '').lower()
+            if name_lower.endswith('.html') or (followers_file.mimetype and 'html' in followers_file.mimetype):
+                content = followers_file.read()
+                usernames = extract_usernames_from_html_bytes(content)
+                write_synthetic_json(usernames, followers_dest)
+            else:
+                followers_file.save(followers_dest)
 
         # run C executable
-        command = [C_EXECUTABLE, following_path, followers_path]
+        command = [C_EXECUTABLE, following_dest, followers_dest]
         print(f"Executing command: {' '.join(command)}")
         result = subprocess.run(command, capture_output=True, text=True)
 
@@ -89,9 +125,7 @@ def check_followers():
                 print('Adding to not_followed_by_you:', username) 
                 current_list.append(username)
 
-        # clean up uploaded files
-        os.remove(following_path)
-        os.remove(followers_path)
+        # tempdir auto-cleans
 
         print('notFollowingBack:', not_following_back)  
         print('notFollowedByYou:', not_followed_by_you) 
@@ -149,22 +183,69 @@ def check_zip():
                 # Otherwise fall back to the first match in a stable order
                 return matches[0] if matches else None
 
-            followers_member = pick_json('followers')
-            following_member = pick_json('following')
+            def pick_html(keyword):
+                matches = []
+                for name in namelist:
+                    lower = name.lower()
+                    base = os.path.basename(lower)
+                    if not lower.endswith('.html'):
+                        continue
+                    if keyword not in base:
+                        continue
+                    if any(bad in base for bad in ['recent', 'pending', 'requests', 'block']):
+                        continue
+                    matches.append(name)
+                preferred = [m for m in matches if os.path.basename(m).lower() == f"{keyword}.html"]
+                if preferred:
+                    return preferred[0]
+                return matches[0] if matches else None
 
-            if not followers_member or not following_member:
-                raise ValueError(
-                    "Could not locate both followers and following JSON in the ZIP. "
-                    "Ensure you selected 'Followers and following' and JSON format in Instagram's export."
-                )
+            followers_member_json = pick_json('followers')
+            following_member_json = pick_json('following')
 
             followers_path = os.path.join(tmpdir, 'followers.json')
             following_path = os.path.join(tmpdir, 'following.json')
-            # Extract selected members to temp paths
-            with zf.open(followers_member) as src, open(followers_path, 'wb') as dst:
-                dst.write(src.read())
-            with zf.open(following_member) as src, open(following_path, 'wb') as dst:
-                dst.write(src.read())
+
+            if followers_member_json and following_member_json:
+                # Extract JSON members directly
+                with zf.open(followers_member_json) as src, open(followers_path, 'wb') as dst:
+                    dst.write(src.read())
+                with zf.open(following_member_json) as src, open(following_path, 'wb') as dst:
+                    dst.write(src.read())
+            else:
+                # Try HTML members and convert to synthetic JSON
+                followers_member_html = pick_html('followers')
+                following_member_html = pick_html('following')
+                if not followers_member_html or not following_member_html:
+                    raise ValueError(
+                        "Could not locate both followers and following (JSON or HTML) in the ZIP. "
+                        "Ensure 'Followers and following' is included in your export."
+                    )
+
+                def extract_usernames_from_html_bytes(b: bytes):
+                    try:
+                        text = b.decode('utf-8', errors='ignore')
+                    except Exception:
+                        text = str(b)
+                    candidates = set(re.findall(r"instagram\\.com/([A-Za-z0-9._]+)/", text))
+                    excluded = {
+                        'accounts', 'about', 'developer', 'explore', 'reels', 'stories',
+                        'legal', 'privacy', 'terms', 'directory', 'oauth', 'graphql',
+                        'i', 'p', 'web', 'emails', 'security', 'help'
+                    }
+                    return [u for u in candidates if u not in excluded]
+
+                def write_synthetic_json(usernames, dest_path):
+                    data = {"list": [{"value": u} for u in usernames]}
+                    with open(dest_path, 'w', encoding='utf-8') as f:
+                        json.dump(data, f)
+
+                with zf.open(followers_member_html) as src:
+                    followers_usernames = extract_usernames_from_html_bytes(src.read())
+                with zf.open(following_member_html) as src:
+                    following_usernames = extract_usernames_from_html_bytes(src.read())
+                write_synthetic_json(followers_usernames, followers_path)
+                write_synthetic_json(following_usernames, following_path)
 
             # run C executable
             command = [C_EXECUTABLE, following_path, followers_path]

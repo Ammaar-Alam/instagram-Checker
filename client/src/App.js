@@ -122,41 +122,76 @@ function App() {
 
   const DYI_URL = 'https://accountscenter.instagram.com/info_and_permissions/dyi/?entry_point=notification';
 
+  // Tutorial image helper that tries multiple extensions
+  const TutorialImage = ({ step }) => {
+    const stepStr = String(step).padStart(2, '0');
+    const candidates = [
+      // Preferred numeric filenames e.g., 01.png, 02.png, ...
+      `/tutorial/${stepStr}.png`,
+      `/tutorial/${stepStr}.jpg`,
+      `/tutorial/${stepStr}.webp`,
+      // Backward-compat: step1.png, step2.png, ...
+      `/tutorial/step${step}.png`,
+      `/tutorial/step${step}.jpg`,
+      `/tutorial/step${step}.webp`,
+    ];
+    const [index, setIndex] = useState(0);
+    const [visible, setVisible] = useState(true);
+    if (!visible) return null;
+    return (
+      <Box sx={{ mt: 1, mb: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
+        <img
+          src={candidates[index]}
+          style={{ width: '100%', height: 'auto', display: 'block' }}
+          onError={() => {
+            if (index < candidates.length - 1) setIndex(index + 1);
+            else setVisible(false);
+          }}
+        />
+      </Box>
+    );
+  };
+
   const steps = [
     {
-      label: 'Open Instagram Download Page',
-      description: 'Open the official Instagram data download page in a new tab. You may be asked to log in.',
+      label: 'Create Export',
+      description: 'Click “Create export” on Instagram’s download page to start the process.',
       action: () => window.open(DYI_URL, '_blank'),
       actionText: 'Open Download Page',
+      withImage: true,
     },
     {
-      label: 'Select “Followers and following”',
-      description: 'Choose Select types of information, then select Followers and following.',
+      label: 'Choose Your Instagram Profile',
+      description: 'Select your Instagram profile (not Meta) for the export.',
+      withImage: true,
     },
     {
-      label: 'Choose Format: JSON',
-      description: 'Ensure the format is set to JSON for compatibility with this analyzer.',
+      label: 'Export To Device',
+      description: 'Pick “Export to device” so you can download the ZIP directly.',
+      withImage: true,
     },
     {
-      label: 'Set Date range: All time',
-      description: 'Select All time so your export includes your entire network.',
+      label: 'Set Options (1–4) Then Start Export',
+      description: '1) Date range: All time. 2) Format: JSON (this site also supports HTML). 3) Media quality: optional lower for faster export. 4) Press “Start export”.',
+      withImage: true,
     },
     {
-      label: 'Submit the request',
-      description: 'Tap Submit request. Instagram will prepare your data and email you when ready.',
+      label: 'Track Export Status',
+      description: 'Your request appears in the list (1). When completed, a “Download” button is shown (2).',
+      withImage: true,
     },
     {
-      label: 'Download the ZIP from your email',
-      description: 'Look for “Your Instagram Data” email, download the ZIP to your device.',
+      label: 'Download The Export',
+      description: 'Click the “Download” button to open the download dialog and save the ZIP.',
+      withImage: true,
     },
     {
-      label: 'Upload the ZIP here',
-      description: 'Return to this page and upload the ZIP using the uploader above. We extract the correct files automatically.',
+      label: 'Re‑enter Password If Prompted',
+      description: 'Sometimes Instagram asks you to re‑enter your password before downloading.',
+      withImage: true,
       action: () => {
-        // Scroll to uploader
-        if (formRef.current) {
-          formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        if (formRef.current) formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       },
       actionText: 'Scroll to Uploader',
     },
@@ -316,7 +351,7 @@ function App() {
               sx={{ mb: 2 }}
             >
               <Tab value="zip" label="Upload Instagram ZIP (Recommended)" />
-              <Tab value="json" label="Upload followers.json + following.json" />
+              <Tab value="json" label="Upload followers (JSON/HTML) + following (JSON/HTML)" />
             </Tabs>
             {error && (
               <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
@@ -338,7 +373,7 @@ function App() {
               {uploadMode === 'zip' ? (
                 <>
                   <Box mb={2}>
-                    <Typography variant="subtitle1">Instagram Data ZIP:</Typography>
+                    <Typography variant="subtitle1">Instagram Data ZIP (JSON or HTML exports supported):</Typography>
                     <input
                       type="file"
                       accept=".zip,application/zip,application/x-zip-compressed"
@@ -352,10 +387,10 @@ function App() {
               ) : (
                 <>
                   <Box mb={2}>
-                    <Typography variant="subtitle1">Following JSON:</Typography>
+                    <Typography variant="subtitle1">Following (JSON or HTML):</Typography>
                     <input
                       type="file"
-                      accept=".json"
+                      accept=".json,.html,text/html"
                       onChange={(e) => setFollowingFile(e.target.files[0])}
                       disabled={loading}
                       required
@@ -363,10 +398,10 @@ function App() {
                     />
                   </Box>
                   <Box mb={2}>
-                    <Typography variant="subtitle1">Followers JSON:</Typography>
+                    <Typography variant="subtitle1">Followers (JSON or HTML):</Typography>
                     <input
                       type="file"
-                      accept=".json"
+                      accept=".json,.html,text/html"
                       onChange={(e) => setFollowersFile(e.target.files[0])}
                       disabled={loading}
                       required
@@ -411,6 +446,7 @@ function App() {
                   <StepLabel>{step.label}</StepLabel>
                   <StepContent>
                     <Typography sx={{ mb: 1 }}>{step.description}</Typography>
+                    {step.withImage && <TutorialImage step={index + 1} />}
                     <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
                       {step.action && (
                         <StyledButton onClick={step.action} variant="contained" color="primary">

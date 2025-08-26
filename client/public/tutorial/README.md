@@ -3,14 +3,9 @@ Tutorial assets
 
 Drop annotated screenshots or short clips for the guided tutorial here.
 
-Recommended naming
-- 01-open-download-page.png
-- 02-select-types.png
-- 03-select-followers-and-following.png
-- 04-format-json.png
-- 05-date-range-all-time.png
-- 06-submit-request.png
-- 07-download-zip.png
+Accepted naming
+- Numeric only: 01.png, 02.png, … 07.png (preferred)
+- Also supported: step1.png, step2.png, … step7.png
 
 Notes
 - Supported formats: .png, .jpg, .webp, .gif, .mp4 (short clips).

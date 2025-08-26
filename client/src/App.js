@@ -27,6 +27,10 @@ import {
   TextField,
   InputAdornment,
   ListItemButton,
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent,
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -114,6 +118,52 @@ function App() {
   const resultsRef = useRef();
   const [activeResultTab, setActiveResultTab] = useState('notFollowingBack');
   const [filterText, setFilterText] = useState('');
+  const [activeStep, setActiveStep] = useState(0);
+
+  const DYI_URL = 'https://accountscenter.instagram.com/info_and_permissions/dyi/?entry_point=notification';
+
+  const steps = [
+    {
+      label: 'Open Instagram Download Page',
+      description: 'Open the official Instagram data download page in a new tab. You may be asked to log in.',
+      action: () => window.open(DYI_URL, '_blank'),
+      actionText: 'Open Download Page',
+    },
+    {
+      label: 'Select “Followers and following”',
+      description: 'Choose Select types of information, then select Followers and following.',
+    },
+    {
+      label: 'Choose Format: JSON',
+      description: 'Ensure the format is set to JSON for compatibility with this analyzer.',
+    },
+    {
+      label: 'Set Date range: All time',
+      description: 'Select All time so your export includes your entire network.',
+    },
+    {
+      label: 'Submit the request',
+      description: 'Tap Submit request. Instagram will prepare your data and email you when ready.',
+    },
+    {
+      label: 'Download the ZIP from your email',
+      description: 'Look for “Your Instagram Data” email, download the ZIP to your device.',
+    },
+    {
+      label: 'Upload the ZIP here',
+      description: 'Return to this page and upload the ZIP using the uploader above. We extract the correct files automatically.',
+      action: () => {
+        // Scroll to uploader
+        if (formRef.current) {
+          formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      },
+      actionText: 'Scroll to Uploader',
+    },
+  ];
+
+  const handleNextStep = () => setActiveStep((prev) => Math.min(prev + 1, steps.length));
+  const handleBackStep = () => setActiveStep((prev) => Math.max(prev - 1, 0));
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -337,7 +387,7 @@ function App() {
             </Box>
           </Paper>
 
-          {/* Instructions Section - Now Second */}
+          {/* Guided Tutorial */}
           <Paper 
             elevation={0}
             sx={{ 
@@ -349,17 +399,53 @@ function App() {
             }}
           >
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #8ffcff, #4dc6ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              How to Download Your Instagram Data
+              Guided Tutorial: Get Your Instagram Data
             </Typography>
-            <ol style={{ paddingLeft: '20px', margin: '16px 0' }}>
-              <li>Open Instagram App and tap the profile icon in the bottom right to go to your profile.</li>
-              <li>Tap the more options icon in the top right, then tap <strong>Your activity</strong>.</li>
-              <li>Under <strong>Information you shared with Instagram</strong>, tap <strong>Download your information</strong>.</li>
-              <li>Enter your email address where you'd like to receive the download link, then tap <strong>Request a download</strong>.</li>
-              <li>Choose <strong>Select types of information</strong> and scroll down to select <strong>Followers and following</strong>.</li>
-              <li>Select <strong>Format: JSON</strong> and <strong>Date range: All time</strong>, then tap <strong>Submit request</strong>.</li>
-              <li>You'll receive an email titled "Your Instagram Data" with a link to download your data. This might take up to 24 hours.</li>
-            </ol>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Follow these steps. Click the button on step 1 to open Instagram’s download page. When the ZIP arrives, upload it above.
+            </Typography>
+
+            <Stepper activeStep={activeStep} orientation="vertical">
+              {steps.map((step, index) => (
+                <Step key={step.label}>
+                  <StepLabel>{step.label}</StepLabel>
+                  <StepContent>
+                    <Typography sx={{ mb: 1 }}>{step.description}</Typography>
+                    <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+                      {step.action && (
+                        <StyledButton onClick={step.action} variant="contained" color="primary">
+                          {step.actionText}
+                        </StyledButton>
+                      )}
+                      <Button
+                        disabled={index === steps.length - 1}
+                        onClick={handleNextStep}
+                        variant="text"
+                        color="primary"
+                      >
+                        Next
+                      </Button>
+                      <Button disabled={index === 0} onClick={handleBackStep} variant="text" color="primary">
+                        Back
+                      </Button>
+                    </Box>
+                  </StepContent>
+                </Step>
+              ))}
+            </Stepper>
+
+            <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+              <StyledButton onClick={() => window.open(DYI_URL, '_blank')}>
+                Open Download Page
+              </StyledButton>
+              <Button
+                onClick={() => navigator.clipboard.writeText(DYI_URL)}
+                variant="outlined"
+                color="primary"
+              >
+                Copy Link
+              </Button>
+            </Box>
           </Paper>
             </Grid>
 

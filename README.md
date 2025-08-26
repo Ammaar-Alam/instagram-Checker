@@ -117,6 +117,12 @@ To analyze your Instagram followers and following, you need to download your dat
 
    You'll receive an email titled "Your Instagram Data" with a link to download your data. This might take up to 24 hours.
 
+Quick link: You can also open the official download page directly here:
+
+https://accountscenter.instagram.com/info_and_permissions/dyi/?entry_point=notification
+
+The web app includes a guided tutorial (step‑by‑step) that opens this link for you and walks you through each step.
+
 ## Uploading Your Data (ZIP or JSON)
 
 Option A — Upload the ZIP (recommended):

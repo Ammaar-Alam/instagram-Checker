@@ -31,7 +31,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  MobileStepper,
+  Skeleton,
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -40,6 +40,9 @@ import LaptopIcon from '@mui/icons-material/Laptop';
 import SearchIcon from '@mui/icons-material/Search';
 import LaunchIcon from '@mui/icons-material/Launch';
 import CloseIcon from '@mui/icons-material/Close';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
+import Grow from '@mui/material/Grow';
+import { keyframes } from '@mui/system';
 
 // Portfolio-inspired dark theme
 const darkTheme = createTheme({
@@ -127,6 +130,11 @@ function App() {
   const DYI_URL = 'https://accountscenter.instagram.com/info_and_permissions/dyi/?entry_point=notification';
 
   // Tutorial image helper that tries multiple extensions
+  const fadeSlideIn = keyframes({
+    '0%': { opacity: 0, transform: 'translateY(8px)' },
+    '100%': { opacity: 1, transform: 'translateY(0)' }
+  });
+
   const TutorialImage = ({ step }) => {
     const stepStr = String(step).padStart(2, '0');
     const candidates = [
@@ -141,13 +149,28 @@ function App() {
     ];
     const [index, setIndex] = useState(0);
     const [visible, setVisible] = useState(true);
+    const [loaded, setLoaded] = useState(false);
     if (!visible) return null;
     return (
-      <Box sx={{ mt: 1, mb: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
+      <Box sx={{
+        mt: 1,
+        mb: 2,
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 2,
+        overflow: 'hidden',
+        minHeight: { xs: 220, sm: 300, md: 460 },
+        position: 'relative',
+        animation: `${fadeSlideIn} 220ms ease`
+      }}>
+        {!loaded && (
+          <Skeleton variant="rectangular" sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(255,255,255,0.04)' }} />
+        )}
         {/* eslint-disable-next-line jsx-a11y/alt-text */}
         <img
           src={candidates[index]}
           style={{ width: '100%', height: 'auto', display: 'block' }}
+          onLoad={() => setLoaded(true)}
           onError={() => {
             if (index < candidates.length - 1) setIndex(index + 1);
             else setVisible(false);
@@ -443,24 +466,13 @@ function App() {
               Use the links below, then open the guided walkthrough for a step‑by‑step overlay with screenshots.
             </Typography>
 
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <StyledButton onClick={() => window.open(DYI_URL, '_blank')}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              <StyledButton onClick={() => { setActiveStep(0); setTutorialOpen(true); }} sx={{ mt: 0, minWidth: 260 }}>
+                Follow These Steps (Walkthrough)
+              </StyledButton>
+              <StyledButton onClick={() => window.open(DYI_URL, '_blank')} sx={{ mt: 0, minWidth: 260 }}>
                 Open Download Page
               </StyledButton>
-              <Button
-                onClick={() => navigator.clipboard.writeText(DYI_URL)}
-                variant="outlined"
-                color="primary"
-              >
-                Copy Link
-              </Button>
-              <Button
-                onClick={() => { setActiveStep(0); setTutorialOpen(true); }}
-                variant="contained"
-                color="primary"
-              >
-                Follow These Steps (Walkthrough)
-              </Button>
             </Box>
           </Paper>
           {/* Tutorial Modal */}
@@ -469,49 +481,66 @@ function App() {
             onClose={() => setTutorialOpen(false)}
             fullWidth
             maxWidth="md"
+            TransitionComponent={Grow}
+            transitionDuration={200}
+            BackdropProps={{ sx: { backgroundColor: 'rgba(10,10,10,0.75)', backdropFilter: 'blur(2px)' } }}
             PaperProps={{
               sx: {
                 backgroundColor: 'background.paper',
                 border: '1px solid',
                 borderColor: 'divider',
-                borderRadius: 2
+                borderRadius: 2,
+                boxShadow: 8
               }
             }}
           >
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>{steps[activeStep]?.label}</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #8ffcff, #4dc6ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{steps[activeStep]?.label}</Typography>
               <IconButton onClick={() => setTutorialOpen(false)} size="small">
                 <CloseIcon />
               </IconButton>
             </DialogTitle>
             <DialogContent dividers>
-              {steps[activeStep]?.withImage && <TutorialImage step={activeStep + 1} />}
-              <Typography>{steps[activeStep]?.description}</Typography>
+              <Box key={activeStep} sx={{ animation: `${fadeSlideIn} 220ms ease` }}>
+                {steps[activeStep]?.withImage && <TutorialImage step={activeStep + 1} />}
+                <Typography>{steps[activeStep]?.description}</Typography>
+              </Box>
             </DialogContent>
             <DialogActions sx={{ px: 2 }}>
-              <Box sx={{ width: '100%' }}>
-                <MobileStepper
-                  variant="dots"
-                  steps={steps.length}
-                  position="static"
-                  activeStep={activeStep}
-                  backButton={
-                    <Button size="small" onClick={() => setActiveStep((s) => Math.max(0, s - 1))} disabled={activeStep === 0}>
-                      Back
-                    </Button>
-                  }
-                  nextButton={
-                    activeStep === steps.length - 1 ? (
-                      <Button size="small" onClick={() => { setTutorialOpen(false); if (formRef.current) { formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}>
-                        Done
-                      </Button>
-                    ) : (
-                      <Button size="small" onClick={() => setActiveStep((s) => Math.min(steps.length - 1, s + 1))}>
-                        Next
-                      </Button>
-                    )
-                  }
-                />
+              <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                <Button size="small" onClick={() => setActiveStep((s) => Math.max(0, s - 1))} disabled={activeStep === 0}>
+                  Back
+                </Button>
+                {/* Custom dots with check marks */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {steps.map((_, i) => {
+                    const completed = i < activeStep;
+                    const isActive = i === activeStep;
+                    return (
+                      <Box key={i} onClick={() => setActiveStep(i)} sx={{ position: 'relative', width: isActive ? 14 : 10, height: isActive ? 14 : 10, cursor: 'pointer' }}>
+                        <Box sx={{
+                          width: '100%', height: '100%', borderRadius: '50%',
+                          border: '1.5px solid',
+                          borderColor: completed || isActive ? 'primary.main' : 'divider',
+                          bgcolor: completed ? 'rgba(143,252,255,0.15)' : 'transparent',
+                          transition: 'all 200ms ease'
+                        }} />
+                        {completed && (
+                          <CheckRoundedIcon fontSize="inherit" sx={{ position: 'absolute', inset: -2, color: 'primary.main' }} />
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Box>
+                {activeStep === steps.length - 1 ? (
+                  <Button size="small" onClick={() => { setTutorialOpen(false); if (formRef.current) { formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}>
+                    Done
+                  </Button>
+                ) : (
+                  <Button size="small" onClick={() => setActiveStep((s) => Math.min(steps.length - 1, s + 1))}>
+                    Next
+                  </Button>
+                )}
               </Box>
             </DialogActions>
           </Dialog>

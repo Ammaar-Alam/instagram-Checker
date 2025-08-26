@@ -27,10 +27,11 @@ import {
   TextField,
   InputAdornment,
   ListItemButton,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  MobileStepper,
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -38,6 +39,7 @@ import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import LaptopIcon from '@mui/icons-material/Laptop';
 import SearchIcon from '@mui/icons-material/Search';
 import LaunchIcon from '@mui/icons-material/Launch';
+import CloseIcon from '@mui/icons-material/Close';
 
 // Portfolio-inspired dark theme
 const darkTheme = createTheme({
@@ -120,6 +122,7 @@ function App() {
   const [activeResultTab, setActiveResultTab] = useState('notFollowingBack');
   const [filterText, setFilterText] = useState('');
   const [activeStep, setActiveStep] = useState(0);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   const DYI_URL = 'https://accountscenter.instagram.com/info_and_permissions/dyi/?entry_point=notification';
 
@@ -198,8 +201,7 @@ function App() {
     },
   ];
 
-  const handleNextStep = () => setActiveStep((prev) => Math.min(prev + 1, steps.length));
-  const handleBackStep = () => setActiveStep((prev) => Math.max(prev - 1, 0));
+  // Tutorial navigation handled inline in Dialog actions
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -435,43 +437,13 @@ function App() {
             }}
           >
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #8ffcff, #4dc6ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Guided Tutorial: Get Your Instagram Data
+              Download Your Instagram Data
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Follow these steps. Click the button on step 1 to open Instagram’s download page. When the ZIP arrives, upload it above.
+              Use the links below, then open the guided walkthrough for a step‑by‑step overlay with screenshots.
             </Typography>
 
-            <Stepper activeStep={activeStep} orientation="vertical">
-              {steps.map((step, index) => (
-                <Step key={step.label}>
-                  <StepLabel>{step.label}</StepLabel>
-                  <StepContent>
-                    <Typography sx={{ mb: 1 }}>{step.description}</Typography>
-                    {step.withImage && <TutorialImage step={index + 1} />}
-                    <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
-                      {step.action && (
-                        <StyledButton onClick={step.action} variant="contained" color="primary">
-                          {step.actionText}
-                        </StyledButton>
-                      )}
-                      <Button
-                        disabled={index === steps.length - 1}
-                        onClick={handleNextStep}
-                        variant="text"
-                        color="primary"
-                      >
-                        Next
-                      </Button>
-                      <Button disabled={index === 0} onClick={handleBackStep} variant="text" color="primary">
-                        Back
-                      </Button>
-                    </Box>
-                  </StepContent>
-                </Step>
-              ))}
-            </Stepper>
-
-            <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <StyledButton onClick={() => window.open(DYI_URL, '_blank')}>
                 Open Download Page
               </StyledButton>
@@ -482,8 +454,67 @@ function App() {
               >
                 Copy Link
               </Button>
+              <Button
+                onClick={() => { setActiveStep(0); setTutorialOpen(true); }}
+                variant="contained"
+                color="primary"
+              >
+                Follow These Steps (Walkthrough)
+              </Button>
             </Box>
           </Paper>
+          {/* Tutorial Modal */}
+          <Dialog
+            open={tutorialOpen}
+            onClose={() => setTutorialOpen(false)}
+            fullWidth
+            maxWidth="md"
+            PaperProps={{
+              sx: {
+                backgroundColor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2
+              }
+            }}
+          >
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>{steps[activeStep]?.label}</Typography>
+              <IconButton onClick={() => setTutorialOpen(false)} size="small">
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+              {steps[activeStep]?.withImage && <TutorialImage step={activeStep + 1} />}
+              <Typography>{steps[activeStep]?.description}</Typography>
+            </DialogContent>
+            <DialogActions sx={{ px: 2 }}>
+              <Box sx={{ width: '100%' }}>
+                <MobileStepper
+                  variant="dots"
+                  steps={steps.length}
+                  position="static"
+                  activeStep={activeStep}
+                  backButton={
+                    <Button size="small" onClick={() => setActiveStep((s) => Math.max(0, s - 1))} disabled={activeStep === 0}>
+                      Back
+                    </Button>
+                  }
+                  nextButton={
+                    activeStep === steps.length - 1 ? (
+                      <Button size="small" onClick={() => { setTutorialOpen(false); if (formRef.current) { formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}>
+                        Done
+                      </Button>
+                    ) : (
+                      <Button size="small" onClick={() => setActiveStep((s) => Math.min(steps.length - 1, s + 1))}>
+                        Next
+                      </Button>
+                    )
+                  }
+                />
+              </Box>
+            </DialogActions>
+          </Dialog>
             </Grid>
 
             {/* Right column: results panel (persistent) */}

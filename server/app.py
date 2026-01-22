@@ -94,46 +94,44 @@ def check_followers():
             else:
                 followers_file.save(followers_dest)
 
-        # run C executable
-        command = [C_EXECUTABLE, following_dest, followers_dest]
-        print(f"Executing command: {' '.join(command)}")
-        result = subprocess.run(command, capture_output=True, text=True)
+            # run C executable while temp files exist
+            command = [C_EXECUTABLE, following_dest, followers_dest]
+            print(f"Executing command: {' '.join(command)}")
+            result = subprocess.run(command, capture_output=True, text=True)
 
-        if result.returncode != 0:
-            print(f"C program stdout: {result.stdout}")
-            print(f"C program stderr: {result.stderr}")
-            raise subprocess.CalledProcessError(result.returncode, command, result.stdout, result.stderr)
+            if result.returncode != 0:
+                print(f"C program stdout: {result.stdout}")
+                print(f"C program stderr: {result.stderr}")
+                raise subprocess.CalledProcessError(result.returncode, command, result.stdout, result.stderr)
 
-        # parse C program output
-        output_lines = result.stdout.strip().split('\n')
-        print('Output Lines:', output_lines) 
+            # parse C program output
+            output_lines = result.stdout.strip().split('\n')
+            print('Output Lines:', output_lines) 
 
-        not_following_back = []
-        not_followed_by_you = []
-        current_list = not_following_back
+            not_following_back = []
+            not_followed_by_you = []
+            current_list = not_following_back
 
-        for line in output_lines:
-            print('Processing Line:', line)  
-            if line == "People who follow you but you don't follow back:":
-                current_list = not_followed_by_you
-            elif line.endswith("does not follow you back."):
-                username = line.split(' ')[0]
-                print('Adding to not_following_back:', username)  
-                current_list.append(username)
-            elif line.endswith("is not followed by you."):
-                username = line.split(' ')[0]
-                print('Adding to not_followed_by_you:', username) 
-                current_list.append(username)
+            for line in output_lines:
+                print('Processing Line:', line)  
+                if line == "People who follow you but you don't follow back:":
+                    current_list = not_followed_by_you
+                elif line.endswith("does not follow you back."):
+                    username = line.split(' ')[0]
+                    print('Adding to not_following_back:', username)  
+                    current_list.append(username)
+                elif line.endswith("is not followed by you."):
+                    username = line.split(' ')[0]
+                    print('Adding to not_followed_by_you:', username) 
+                    current_list.append(username)
 
-        # tempdir auto-cleans
+            print('notFollowingBack:', not_following_back)  
+            print('notFollowedByYou:', not_followed_by_you) 
 
-        print('notFollowingBack:', not_following_back)  
-        print('notFollowedByYou:', not_followed_by_you) 
-
-        return jsonify({
-            'notFollowingBack': not_following_back,
-            'notFollowedByYou': not_followed_by_you
-        })
+            return jsonify({
+                'notFollowingBack': not_following_back,
+                'notFollowedByYou': not_followed_by_you
+            })
 
     except subprocess.CalledProcessError as error:
         print(f"Error executing C code: {error}")

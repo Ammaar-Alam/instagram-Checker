@@ -33,6 +33,70 @@ app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'uploads')
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
+def extract_usernames_from_html_bytes(b: bytes):
+    try:
+        text = b.decode('utf-8', errors='ignore')
+    except Exception:
+        text = str(b)
+    candidates = set(re.findall(r"instagram\\.com/([A-Za-z0-9._]+)/", text))
+    excluded = {
+        'accounts', 'about', 'developer', 'explore', 'reels', 'stories',
+        'legal', 'privacy', 'terms', 'directory', 'oauth', 'graphql',
+        'i', 'p', 'web', 'emails', 'security', 'help'
+    }
+    return [u for u in candidates if u not in excluded]
+
+def extract_usernames_from_json_bytes(b: bytes):
+    try:
+        text = b.decode('utf-8', errors='ignore')
+    except Exception:
+        text = str(b)
+    try:
+        data = json.loads(text)
+    except Exception:
+        data = None
+
+    usernames = []
+    title_candidates = []
+
+    def walk(obj):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if k == 'value' and isinstance(v, str) and v:
+                    usernames.append(v)
+                elif k == 'title' and isinstance(v, str) and v:
+                    title_candidates.append(v)
+                else:
+                    walk(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                walk(item)
+
+    if data is not None:
+        walk(data)
+
+    if not usernames:
+        usernames = re.findall(r'"value"\s*:\s*"([^"]+)"', text)
+
+    if not usernames and title_candidates:
+        usernames = title_candidates
+
+    if not usernames:
+        usernames = re.findall(r'https?://www\.instagram\.com/([^/"\?]+)', text)
+
+    seen = set()
+    deduped = []
+    for u in usernames:
+        if u and u not in seen:
+            seen.add(u)
+            deduped.append(u)
+    return deduped
+
+def write_synthetic_json(usernames, dest_path):
+    data = {"list": [{"value": u} for u in usernames]}
+    with open(dest_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f)
+
 # Serve React App
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -53,25 +117,6 @@ def check_followers():
         following_file = request.files['following']
         followers_file = request.files['followers']
 
-        def extract_usernames_from_html_bytes(b: bytes):
-            try:
-                text = b.decode('utf-8', errors='ignore')
-            except Exception:
-                text = str(b)
-            # find profile links like https://www.instagram.com/username/
-            candidates = set(re.findall(r"instagram\\.com/([A-Za-z0-9._]+)/", text))
-            excluded = {
-                'accounts', 'about', 'developer', 'explore', 'reels', 'stories',
-                'legal', 'privacy', 'terms', 'directory', 'oauth', 'graphql',
-                'i', 'p', 'web', 'emails', 'security', 'help'
-            }
-            return [u for u in candidates if u not in excluded]
-
-        def write_synthetic_json(usernames, dest_path):
-            data = {"list": [{"value": u} for u in usernames]}
-            with open(dest_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f)
-
         with tempfile.TemporaryDirectory() as tmpdir:
             following_dest = os.path.join(tmpdir, 'following.json')
             followers_dest = os.path.join(tmpdir, 'followers.json')
@@ -83,7 +128,9 @@ def check_followers():
                 usernames = extract_usernames_from_html_bytes(content)
                 write_synthetic_json(usernames, following_dest)
             else:
-                following_file.save(following_dest)
+                content = following_file.read()
+                usernames = extract_usernames_from_json_bytes(content)
+                write_synthetic_json(usernames, following_dest)
 
             # Prepare followers file (accept .json or .html)
             name_lower = (followers_file.filename or '').lower()
@@ -92,7 +139,9 @@ def check_followers():
                 usernames = extract_usernames_from_html_bytes(content)
                 write_synthetic_json(usernames, followers_dest)
             else:
-                followers_file.save(followers_dest)
+                content = followers_file.read()
+                usernames = extract_usernames_from_json_bytes(content)
+                write_synthetic_json(usernames, followers_dest)
 
             # run C executable while temp files exist
             command = [C_EXECUTABLE, following_dest, followers_dest]
@@ -205,11 +254,12 @@ def check_zip():
             following_path = os.path.join(tmpdir, 'following.json')
 
             if followers_member_json and following_member_json:
-                # Extract JSON members directly
-                with zf.open(followers_member_json) as src, open(followers_path, 'wb') as dst:
-                    dst.write(src.read())
-                with zf.open(following_member_json) as src, open(following_path, 'wb') as dst:
-                    dst.write(src.read())
+                with zf.open(followers_member_json) as src:
+                    followers_usernames = extract_usernames_from_json_bytes(src.read())
+                with zf.open(following_member_json) as src:
+                    following_usernames = extract_usernames_from_json_bytes(src.read())
+                write_synthetic_json(followers_usernames, followers_path)
+                write_synthetic_json(following_usernames, following_path)
             else:
                 # Try HTML members and convert to synthetic JSON
                 followers_member_html = pick_html('followers')
@@ -219,24 +269,6 @@ def check_zip():
                         "Could not locate both followers and following (JSON or HTML) in the ZIP. "
                         "Ensure 'Followers and following' is included in your export."
                     )
-
-                def extract_usernames_from_html_bytes(b: bytes):
-                    try:
-                        text = b.decode('utf-8', errors='ignore')
-                    except Exception:
-                        text = str(b)
-                    candidates = set(re.findall(r"instagram\\.com/([A-Za-z0-9._]+)/", text))
-                    excluded = {
-                        'accounts', 'about', 'developer', 'explore', 'reels', 'stories',
-                        'legal', 'privacy', 'terms', 'directory', 'oauth', 'graphql',
-                        'i', 'p', 'web', 'emails', 'security', 'help'
-                    }
-                    return [u for u in candidates if u not in excluded]
-
-                def write_synthetic_json(usernames, dest_path):
-                    data = {"list": [{"value": u} for u in usernames]}
-                    with open(dest_path, 'w', encoding='utf-8') as f:
-                        json.dump(data, f)
 
                 with zf.open(followers_member_html) as src:
                     followers_usernames = extract_usernames_from_html_bytes(src.read())
